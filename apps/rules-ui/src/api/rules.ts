@@ -121,22 +121,36 @@ const mockRules: Rule[] = [
 ];
 
 export async function getRules(type?: string): Promise<Rule[]> {
-  // Mock API - replace with real API calls
-  if (type) {
-    return mockRules.filter((r) => r.type === type);
+  try {
+    const params = type ? `?type=${type}` : '';
+    const response = await api.get(`/rules${params}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching rules:', error);
+    // Fallback to mock data if API fails
+    if (type) {
+      return mockRules.filter((r) => r.type === type);
+    }
+    return mockRules;
   }
-  return mockRules;
 }
 
 export async function getRule(id: string): Promise<Rule> {
-  const rule = mockRules.find((r) => r.id === id);
-  if (!rule) throw new Error('Rule not found');
-  return rule;
+  try {
+    const response = await api.get(`/rules/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching rule:', error);
+    // Fallback to mock data
+    const rule = mockRules.find((r) => r.id === id);
+    if (!rule) throw new Error('Rule not found');
+    return rule;
+  }
 }
 
 export async function createRule(data: Partial<Rule>): Promise<Rule> {
   const response = await api.post('/rules', data);
-  return response.data;
+  return response.data.rule || response.data;
 }
 
 export async function updateRule(id: string, data: Partial<Rule>): Promise<Rule> {

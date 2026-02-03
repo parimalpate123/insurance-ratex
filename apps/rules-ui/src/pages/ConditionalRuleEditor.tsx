@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ArrowLeft, Save, Plus, Trash2, Play, Sparkles } from 'lucide-react';
-import { getRule, generateRuleFromDescription, GeneratedRule } from '@/api/rules';
+import { getRule, createRule, updateRule, generateRuleFromDescription, GeneratedRule } from '@/api/rules';
 
 interface Condition {
   field: string;
@@ -38,12 +38,29 @@ export default function ConditionalRuleEditor() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiDescription, setAiDescription] = useState('');
   const [generatedRule, setGeneratedRule] = useState<GeneratedRule | null>(null);
+  const [showTechnicalPreview, setShowTechnicalPreview] = useState(false);
 
-  const { isLoading } = useQuery({
+  const { data: ruleData, isLoading } = useQuery({
     queryKey: ['rule', ruleId],
     queryFn: () => getRule(ruleId!),
     enabled: !isNew && !!ruleId,
   });
+
+  useEffect(() => {
+    if (ruleData) {
+      setFormData({
+        name: ruleData.name,
+        description: ruleData.description || '',
+        productLine: ruleData.productLine,
+      });
+      if (ruleData.data?.conditions) {
+        setConditions(ruleData.data.conditions);
+      }
+      if (ruleData.data?.actions) {
+        setActions(ruleData.data.actions);
+      }
+    }
+  }, [ruleData]);
 
   const generateMutation = useMutation({
     mutationFn: async (description: string) => {
@@ -51,6 +68,19 @@ export default function ConditionalRuleEditor() {
     },
     onSuccess: (rule) => {
       setGeneratedRule(rule);
+    },
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: async (ruleData: any) => {
+      if (isNew) {
+        return createRule(ruleData);
+      } else {
+        return updateRule(ruleId!, ruleData);
+      }
+    },
+    onSuccess: () => {
+      navigate('/conditional-rules');
     },
   });
 
@@ -123,8 +153,23 @@ export default function ConditionalRuleEditor() {
   };
 
   const handleSave = () => {
-    console.log('Saving conditional rule:', { formData, conditions, actions });
-    navigate('/conditional-rules');
+    const ruleData = {
+      name: formData.name,
+      description: formData.description,
+      productLine: formData.productLine,
+      conditions: conditions.map(c => ({
+        field: c.field,
+        operator: c.operator,
+        value: c.value,
+      })),
+      actions: actions.map(a => ({
+        type: a.type,
+        field: a.field,
+        value: a.value,
+      })),
+    };
+
+    saveMutation.mutate(ruleData);
   };
 
   if (isLoading) {
@@ -357,35 +402,102 @@ export default function ConditionalRuleEditor() {
             </div>
           </div>
 
+          {/* Technical Preview - What Will Be Saved */}
+          <div className="pt-4 border-t">
+            <button
+              onClick={() => setShowTechnicalPreview(!showTechnicalPreview)}
+              className="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 mb-3"
+            >
+              <svg
+                className={`h-4 w-4 mr-2 transform transition-transform ${
+                  showTechnicalPreview ? 'rotate-90' : ''
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              Preview Database Payload
+            </button>
+
+            {showTechnicalPreview && (
+              <div className="mb-4">
+                <div className="bg-gray-900 text-green-400 rounded-md p-4 font-mono text-xs overflow-x-auto max-h-96 overflow-y-auto">
+                  <div className="text-yellow-400 mb-2">// Data that will be sent to API and saved to PostgreSQL:</div>
+                  <pre>{JSON.stringify({
+                    name: formData.name,
+                    description: formData.description,
+                    productLine: formData.productLine,
+                    conditions: conditions.map((c, idx) => ({
+                      condition_order: idx,
+                      field_path: c.field,
+                      operator: c.operator,
+                      value: c.value,
+                      logical_operator: idx === 0 ? null : 'AND'
+                    })),
+                    actions: actions.map((a, idx) => ({
+                      action_order: idx,
+                      type: a.type,
+                      field: a.field,
+                      value: a.value
+                    })),
+                    metadata: {
+                      api_endpoint: isNew ? 'POST /api/v1/rules' : `PUT /api/v1/rules/${ruleId}`,
+                      timestamp: new Date().toISOString(),
+                      status: 'draft'
+                    }
+                  }, null, 2)}</pre>
+                </div>
+                <p className="mt-2 text-xs text-gray-500">
+                  💡 This shows the exact JSON structure that will be stored in PostgreSQL tables:
+                  <code className="bg-gray-100 px-1 py-0.5 rounded">conditional_rules</code>,
+                  <code className="bg-gray-100 px-1 py-0.5 rounded ml-1">rule_conditions</code>,
+                  <code className="bg-gray-100 px-1 py-0.5 rounded ml-1">rule_actions</code>
+                </p>
+              </div>
+            )}
+          </div>
+
           {/* Actions */}
-          <div className="flex justify-end space-x-3 pt-4">
-            <button
-              onClick={() => navigate('/conditional-rules')}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Test
-            </button>
-            <button
-              onClick={handleSave}
-              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </button>
+          <div className="pt-4">
+            {saveMutation.isError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-800">
+                  Failed to save rule. Please try again.
+                </p>
+              </div>
+            )}
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => navigate('/conditional-rules')}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <Play className="h-4 w-4 mr-2" />
+                Test
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saveMutation.isPending}
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saveMutation.isPending ? 'Saving...' : 'Save'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* AI Generation Modal */}
       {showAIModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full my-8 max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between flex-shrink-0">
               <div className="flex items-center">
                 <Sparkles className="h-5 w-5 text-purple-600 mr-2" />
                 <h3 className="text-lg font-medium text-gray-900">
@@ -404,7 +516,7 @@ export default function ConditionalRuleEditor() {
               </button>
             </div>
 
-            <div className="p-6">
+            <div className="p-6 overflow-y-auto flex-1">
               {!generatedRule ? (
                 <>
                   <div className="mb-4">
@@ -421,26 +533,6 @@ export default function ConditionalRuleEditor() {
                     <p className="mt-2 text-xs text-gray-500">
                       Describe what condition should trigger the rule and what action should be taken.
                     </p>
-                  </div>
-
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => {
-                        setShowAIModal(false);
-                        setAiDescription('');
-                      }}
-                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleGenerateWithAI}
-                      disabled={!aiDescription.trim() || generateMutation.isPending}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
-                    >
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      {generateMutation.isPending ? 'Generating...' : 'Generate Rule'}
-                    </button>
                   </div>
 
                   {generateMutation.isError && (
@@ -468,13 +560,24 @@ export default function ConditionalRuleEditor() {
                     </div>
 
                     <div className="space-y-3">
+                      <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+                        <label className="block text-xs font-medium text-blue-700 mb-1">Your Input</label>
+                        <p className="text-sm text-blue-900 italic">"{aiDescription}"</p>
+                      </div>
+
+                      <div className="flex items-center justify-center">
+                        <svg className="h-5 w-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        </svg>
+                      </div>
+
                       <div>
                         <label className="block text-xs font-medium text-gray-500">Name</label>
                         <p className="mt-1 text-sm text-gray-900">{generatedRule.name}</p>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-medium text-gray-500">Description</label>
+                        <label className="block text-xs font-medium text-gray-500">Structured Description</label>
                         <p className="mt-1 text-sm text-gray-900">{generatedRule.description}</p>
                       </div>
 
@@ -503,26 +606,93 @@ export default function ConditionalRuleEditor() {
                       <div className="text-xs text-gray-500">
                         <strong>AI Reasoning:</strong> {generatedRule.reasoning}
                       </div>
+
+                      {/* Technical Preview */}
+                      <div className="mt-4 border-t pt-3">
+                        <button
+                          onClick={() => setShowTechnicalPreview(!showTechnicalPreview)}
+                          className="flex items-center text-xs font-medium text-gray-600 hover:text-gray-900"
+                        >
+                          <svg
+                            className={`h-4 w-4 mr-1 transform transition-transform ${
+                              showTechnicalPreview ? 'rotate-90' : ''
+                            }`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          Technical Preview (Database Format)
+                        </button>
+
+                        {showTechnicalPreview && (
+                          <div className="mt-2 bg-gray-900 text-green-400 rounded-md p-3 font-mono text-xs overflow-auto max-h-64">
+                            <pre>{JSON.stringify({
+                              name: generatedRule.name,
+                              description: generatedRule.description,
+                              productLine: formData.productLine,
+                              conditions: generatedRule.conditions.map((c, idx) => ({
+                                condition_order: idx,
+                                field_path: c.field,
+                                operator: c.operator,
+                                value: c.value
+                              })),
+                              actions: generatedRule.actions.map((a, idx) => ({
+                                action_order: idx,
+                                type: a.type,
+                                field: a.field,
+                                value: a.value
+                              }))
+                            }, null, 2)}</pre>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
+                </>
+              )}
+            </div>
 
-                  <div className="flex justify-end space-x-3">
-                    <button
-                      onClick={() => {
-                        setGeneratedRule(null);
-                        setAiDescription('');
-                      }}
-                      className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                    >
-                      Try Again
-                    </button>
-                    <button
-                      onClick={handleAcceptGenerated}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
-                    >
-                      Accept & Use This Rule
-                    </button>
-                  </div>
+            {/* Modal Footer with Buttons */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3 flex-shrink-0">
+              {!generatedRule ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowAIModal(false);
+                      setAiDescription('');
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleGenerateWithAI}
+                    disabled={!aiDescription.trim() || generateMutation.isPending}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    {generateMutation.isPending ? 'Generating...' : 'Generate Rule'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setGeneratedRule(null);
+                      setAiDescription('');
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Try Again
+                  </button>
+                  <button
+                    onClick={handleAcceptGenerated}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                  >
+                    Accept & Use This Rule
+                  </button>
                 </>
               )}
             </div>

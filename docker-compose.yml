@@ -69,13 +69,22 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-us.anthropic.claude-3-5-sonnet-20241022-v2:0}
       - ENABLE_AI_FEATURES=${ENABLE_AI_FEATURES:-true}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=insurratex
+      - DB_PASSWORD=dev_password_change_in_prod
+      - DB_DATABASE=insurratex
     volumes:
       - ./apps/orchestrator/src:/app/src
     networks:
       - insurratex-network
     depends_on:
-      - guidewire-mock
-      - earnix-mock
+      postgres:
+        condition: service_healthy
+      guidewire-mock:
+        condition: service_started
+      earnix-mock:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 10s
@@ -115,28 +124,33 @@ services:
       - orchestrator
     restart: unless-stopped
 
-  # PostgreSQL Database (Week 4+)
-  # postgres:
-  #   image: postgres:15-alpine
-  #   container_name: insurratex-postgres
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     - POSTGRES_DB=insurratex
-  #     - POSTGRES_USER=insurratex
-  #     - POSTGRES_PASSWORD=dev_password_change_in_prod
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-  #   networks:
-  #     - insurratex-network
-  #   restart: unless-stopped
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: insurratex-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=insurratex
+      - POSTGRES_USER=insurratex
+      - POSTGRES_PASSWORD=dev_password_change_in_prod
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - insurratex-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U insurratex"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
 networks:
   insurratex-network:
     driver: bridge
     name: insurratex-network
 
-# volumes:
-#   postgres-data:
-#     name: insurratex-postgres-data
+volumes:
+  postgres-data:
+    name: insurratex-postgres-data
