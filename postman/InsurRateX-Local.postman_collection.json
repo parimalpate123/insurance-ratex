@@ -1,0 +1,437 @@
+{
+  "info": {
+    "name": "InsurRateX - Local Testing",
+    "description": "Complete API testing collection for InsurRateX platform (local Docker setup)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "insurratex"
+  },
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "Orchestrator Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["health"]
+            },
+            "description": "Check if orchestrator service is running"
+          },
+          "response": []
+        },
+        {
+          "name": "Guidewire Mock Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["health"]
+            },
+            "description": "Check if Guidewire mock service is running"
+          },
+          "response": []
+        },
+        {
+          "name": "Earnix Mock Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4001",
+              "path": ["health"]
+            },
+            "description": "Check if Earnix mock service is running"
+          },
+          "response": []
+        }
+      ],
+      "description": "Health check endpoints for all services"
+    },
+    {
+      "name": "Orchestrator API",
+      "item": [
+        {
+          "name": "Execute Rating - Basic GL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-test-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-POSTMAN-001\",\n    \"productCode\": \"GL\",\n    \"effectiveDate\": \"2026-03-01\",\n    \"expirationDate\": \"2027-03-01\",\n    \"insured\": {\n      \"name\": \"Test Company Inc\",\n      \"businessType\": \"MFG\",\n      \"addressLine1\": \"123 Test Street\",\n      \"city\": \"San Francisco\",\n      \"state\": \"CA\",\n      \"postalCode\": \"94102\",\n      \"annualRevenue\": 5000000\n    },\n    \"classification\": {\n      \"code\": \"91580\",\n      \"description\": \"Manufacturing - Electronic Components\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 2000000,\n        \"deductible\": 5000,\n        \"primary\": true\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Execute basic general liability rating"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - California",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-ca-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-CA-001\",\n    \"productCode\": \"GL\",\n    \"insured\": {\n      \"name\": \"California Test Company\",\n      \"businessType\": \"MFG\",\n      \"state\": \"CA\",\n      \"annualRevenue\": 3000000\n    },\n    \"classification\": {\n      \"code\": \"91580\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 1000000,\n        \"deductible\": 5000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test California territorial surcharge"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - Texas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-tx-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-TX-001\",\n    \"productCode\": \"GL\",\n    \"insured\": {\n      \"name\": \"Texas Test Company\",\n      \"businessType\": \"MFG\",\n      \"state\": \"TX\",\n      \"annualRevenue\": 3000000\n    },\n    \"classification\": {\n      \"code\": \"91580\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 1000000,\n        \"deductible\": 5000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test Texas territorial surcharge"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - New York",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-ny-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-NY-001\",\n    \"productCode\": \"GL\",\n    \"insured\": {\n      \"name\": \"New York Test Company\",\n      \"businessType\": \"MFG\",\n      \"state\": \"NY\",\n      \"annualRevenue\": 3000000\n    },\n    \"classification\": {\n      \"code\": \"91580\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 1000000,\n        \"deductible\": 5000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test New York territorial surcharge"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - High Revenue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-highrisk-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-HIGHRISK-001\",\n    \"productCode\": \"GL\",\n    \"insured\": {\n      \"name\": \"High Revenue Company\",\n      \"businessType\": \"MFG\",\n      \"state\": \"CA\",\n      \"annualRevenue\": 15000000\n    },\n    \"classification\": {\n      \"code\": \"91580\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 5000000,\n        \"deductible\": 10000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test high revenue surcharge (>$5M revenue)"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - No Rules",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"requestId\": \"postman-norules-001\",\n  \"applyRules\": false,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-NORULES-001\",\n    \"productCode\": \"GL\",\n    \"insured\": {\n      \"name\": \"No Rules Company\",\n      \"businessType\": \"MFG\",\n      \"state\": \"CA\",\n      \"annualRevenue\": 5000000\n    },\n    \"classification\": {\n      \"code\": \"91580\"\n    },\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"limit\": 2000000,\n        \"deductible\": 5000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Execute rating without business rules"
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Rating - Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"property\",\n  \"requestId\": \"postman-property-001\",\n  \"applyRules\": true,\n  \"policyData\": {\n    \"quoteNumber\": \"Q-PROP-001\",\n    \"productCode\": \"PROP\",\n    \"insured\": {\n      \"name\": \"Property Test Company\",\n      \"businessType\": \"REAL_ESTATE\",\n      \"state\": \"CA\",\n      \"annualRevenue\": 2000000\n    },\n    \"properties\": [\n      {\n        \"id\": \"prop-001\",\n        \"address\": {\n          \"addressLine1\": \"456 Market St\",\n          \"city\": \"San Francisco\",\n          \"state\": \"CA\",\n          \"postalCode\": \"94105\"\n        },\n        \"buildingType\": \"COMMERCIAL_OFFICE\",\n        \"yearBuilt\": 1995,\n        \"squareFootage\": 50000,\n        \"buildingValue\": 15000000\n      }\n    ],\n    \"coverages\": [\n      {\n        \"id\": \"cov-001\",\n        \"type\": \"building\",\n        \"limit\": 15000000,\n        \"deductible\": 25000\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Execute property insurance rating"
+          },
+          "response": []
+        }
+      ],
+      "description": "Rating execution endpoints"
+    },
+    {
+      "name": "Guidewire Mock API",
+      "item": [
+        {
+          "name": "Submit Policy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quoteNumber\": \"Q-GW-POSTMAN-001\",\n  \"productCode\": \"GL\",\n  \"accountNumber\": \"ACC-12345\",\n  \"insured\": {\n    \"name\": \"Guidewire Test Company\",\n    \"businessType\": \"MFG\",\n    \"state\": \"CA\",\n    \"annualRevenue\": 5000000\n  },\n  \"classification\": {\n    \"code\": \"91580\"\n  },\n  \"coverages\": [\n    {\n      \"id\": \"cov-001\",\n      \"limit\": 2000000,\n      \"deductible\": 5000\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3001/pc/rating/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["pc", "rating", "submit"]
+            },
+            "description": "Submit policy to Guidewire mock"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Policy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3001/pc/policies/Q-GW-POSTMAN-001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3001",
+              "path": ["pc", "policies", "Q-GW-POSTMAN-001"]
+            },
+            "description": "Get policy details from Guidewire mock"
+          },
+          "response": []
+        }
+      ],
+      "description": "Guidewire PolicyCenter mock endpoints"
+    },
+    {
+      "name": "Earnix Mock API",
+      "item": [
+        {
+          "name": "Rate Policy",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policyId\": \"POL-EARNIX-001\",\n  \"productLine\": \"general-liability\",\n  \"effectiveDate\": \"2026-03-01\",\n  \"insured\": {\n    \"businessType\": \"Manufacturing\",\n    \"state\": \"CA\",\n    \"revenue\": 5000000\n  },\n  \"exposures\": [\n    {\n      \"exposureId\": \"exp-001\",\n      \"classCode\": \"91580\",\n      \"limit\": 2000000,\n      \"deductible\": 5000\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:4001/earnix/api/v1/rate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4001",
+              "path": ["earnix", "api", "v1", "rate"]
+            },
+            "description": "Submit policy for rating to Earnix mock"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Rate Table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:4001/earnix/api/v1/rates/general-liability/91580",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "4001",
+              "path": ["earnix", "api", "v1", "rates", "general-liability", "91580"]
+            },
+            "description": "Get rate table for specific product and class code"
+          },
+          "response": []
+        }
+      ],
+      "description": "Earnix Rating Engine mock endpoints"
+    },
+    {
+      "name": "Error Scenarios",
+      "item": [
+        {
+          "name": "Invalid Source System",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"invalid-system\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"policyData\": {}\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test error handling for invalid source system"
+          },
+          "response": []
+        },
+        {
+          "name": "Missing Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sourceSystem\": \"guidewire\",\n  \"ratingEngine\": \"earnix\",\n  \"productLine\": \"general-liability\",\n  \"policyData\": {\n    \"quoteNumber\": \"Q-INCOMPLETE-001\"\n  }\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test error handling for missing required fields"
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{invalid json}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/v1/rating/execute",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "rating", "execute"]
+            },
+            "description": "Test error handling for invalid JSON"
+          },
+          "response": []
+        }
+      ],
+      "description": "Error handling test cases"
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "guidewireUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "earnixUrl",
+      "value": "http://localhost:4001",
+      "type": "string"
+    }
+  ]
+}

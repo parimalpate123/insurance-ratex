@@ -1,0 +1,54 @@
+{
+  "policyNumber": "POL-2024-001",
+  "effectiveDate": "2024-01-01T00:00:00Z",
+  "expirationDate": "2025-01-01T00:00:00Z",
+  "accountNumber": "ACC-5678",
+  "insured": {
+    "name": "Acme Manufacturing Corp",
+    "taxId": "12-3456789",
+    "primaryAddress": {
+      "addressLine1": "123 Industrial Blvd",
+      "city": "San Francisco",
+      "state": "CA",
+      "postalCode": "94105",
+      "country": "US"
+    },
+    "businessType": "Manufacturing",
+    "annualRevenue": 5000000,
+    "employeeCount": 50
+  },
+  "coverages": [
+    {
+      "coverageCode": "GeneralLiability",
+      "coverageType": "GL_OCCURRENCE",
+      "limits": {
+        "generalAggregate": 2000000,
+        "productsCompletedOps": 2000000,
+        "personalAdvertisingInjury": 1000000,
+        "eachOccurrence": 1000000,
+        "fireDamage": 50000,
+        "medicalExpense": 5000
+      },
+      "deductible": 5000,
+      "premiumBasis": "Sales"
+    }
+  ],
+  "locations": [
+    {
+      "locationNumber": "001",
+      "address": {
+        "addressLine1": "123 Industrial Blvd",
+        "city": "San Francisco",
+        "state": "CA",
+        "postalCode": "94105"
+      },
+      "buildingSquareFootage": 10000,
+      "numberOfEmployees": 50
+    }
+  ],
+  "classification": {
+    "naicsCode": "332710",
+    "classCode": "91580",
+    "description": "Machine Shops"
+  }
+}

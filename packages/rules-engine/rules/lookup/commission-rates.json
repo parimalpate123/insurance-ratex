@@ -1,0 +1,24 @@
+{
+  "id": "commission-rates-agents",
+  "name": "Agent Commission Rates",
+  "description": "Commission percentage by agent tier",
+  "type": "lookup",
+  "status": "active",
+  "version": "1.0.0",
+  "effectiveDate": "2026-01-01T00:00:00Z",
+  "priority": 50,
+  "keyField": "agentTier",
+  "table": {
+    "platinum": 0.15,
+    "gold": 0.12,
+    "silver": 0.10,
+    "bronze": 0.08,
+    "standard": 0.06
+  },
+  "defaultValue": 0.05,
+  "tags": ["commission", "agent"],
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z"
+  }
+}

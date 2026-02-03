@@ -1,0 +1,94 @@
+{
+  "sourceSystem": "guidewire",
+  "ratingEngine": "earnix",
+  "productLine": "general-liability",
+  "requestId": "example-gl-001",
+  "applyRules": true,
+  "policyData": {
+    "quoteNumber": "Q-2026-GL-001234",
+    "productCode": "GL",
+    "effectiveDate": "2026-03-01",
+    "expirationDate": "2027-03-01",
+    "insured": {
+      "name": "Acme Manufacturing Corporation",
+      "businessType": "MFG",
+      "addressLine1": "123 Industrial Parkway",
+      "addressLine2": "Suite 500",
+      "city": "San Francisco",
+      "state": "CA",
+      "postalCode": "94102",
+      "country": "USA",
+      "annualRevenue": 8500000,
+      "employeeCount": 250,
+      "yearsInBusiness": 15,
+      "website": "https://acme-manufacturing.example.com",
+      "contactPerson": {
+        "name": "John Smith",
+        "title": "Risk Manager",
+        "email": "john.smith@acme-manufacturing.example.com",
+        "phone": "+1-415-555-0123"
+      }
+    },
+    "classification": {
+      "code": "91580",
+      "description": "Manufacturing - Electronic Components",
+      "category": "Manufacturing"
+    },
+    "coverages": [
+      {
+        "id": "cov-001",
+        "type": "general-aggregate",
+        "limit": 2000000,
+        "deductible": 5000,
+        "primary": true,
+        "description": "General Aggregate Coverage"
+      },
+      {
+        "id": "cov-002",
+        "type": "products-completed-operations",
+        "limit": 2000000,
+        "deductible": 5000,
+        "primary": false,
+        "description": "Products and Completed Operations"
+      },
+      {
+        "id": "cov-003",
+        "type": "personal-advertising-injury",
+        "limit": 1000000,
+        "deductible": 2500,
+        "primary": false,
+        "description": "Personal and Advertising Injury"
+      }
+    ],
+    "lossHistory": [
+      {
+        "year": 2025,
+        "claimCount": 2,
+        "totalIncurred": 15000,
+        "totalPaid": 12000,
+        "openReserves": 3000
+      },
+      {
+        "year": 2024,
+        "claimCount": 1,
+        "totalIncurred": 8000,
+        "totalPaid": 8000,
+        "openReserves": 0
+      },
+      {
+        "year": 2023,
+        "claimCount": 0,
+        "totalIncurred": 0,
+        "totalPaid": 0,
+        "openReserves": 0
+      }
+    ],
+    "additionalInfo": {
+      "hasAutoLiability": false,
+      "hasUmbrellaPolicy": true,
+      "hasWorkersComp": true,
+      "safetyPrograms": ["OSHA Compliance", "Regular Safety Training"],
+      "certifications": ["ISO 9001", "ISO 14001"]
+    }
+  }
+}

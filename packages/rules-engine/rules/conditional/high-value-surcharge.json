@@ -1,0 +1,40 @@
+{
+  "id": "high-value-surcharge-ca",
+  "name": "California High-Value Policy Surcharge",
+  "description": "Apply $500 surcharge to CA policies with limits over $1M",
+  "type": "conditional",
+  "status": "active",
+  "version": "1.0.0",
+  "productLine": "general-liability",
+  "state": "CA",
+  "effectiveDate": "2026-01-01T00:00:00Z",
+  "priority": 150,
+  "conditions": [
+    {
+      "fact": "state",
+      "operator": "equal",
+      "value": "CA"
+    },
+    {
+      "fact": "limit",
+      "operator": "greaterThan",
+      "value": 1000000
+    }
+  ],
+  "actions": [
+    {
+      "type": "add",
+      "field": "surcharges",
+      "value": 500
+    },
+    {
+      "type": "log",
+      "value": "Applied CA high-value surcharge: $500"
+    }
+  ],
+  "tags": ["surcharge", "california", "high-value"],
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z"
+  }
+}

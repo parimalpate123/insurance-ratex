@@ -1,0 +1,185 @@
+{
+  "id": "guidewire-cdm-gl-v1",
+  "name": "Guidewire to CDM - General Liability",
+  "description": "Mapping configuration for Guidewire PolicyCenter to CDM for GL policies",
+  "version": "1.0.0",
+  "sourceSystem": "guidewire",
+  "targetSystem": "cdm",
+  "direction": "to-cdm",
+  "productLine": "general-liability",
+  "mappings": [
+    {
+      "sourceField": "$.quoteNumber",
+      "targetField": "quoteNumber",
+      "transformationType": "direct",
+      "required": true,
+      "description": "Quote number"
+    },
+    {
+      "sourceField": "$.productCode",
+      "targetField": "productLine",
+      "transformationType": "lookup",
+      "lookupTable": "productCodeMapping",
+      "required": true,
+      "description": "Map Guidewire product code to CDM product line"
+    },
+    {
+      "sourceField": "$.effectiveDate",
+      "targetField": "effectiveDate",
+      "transformationType": "format",
+      "formatType": "date",
+      "format": "iso",
+      "required": true,
+      "description": "Policy effective date in ISO format"
+    },
+    {
+      "sourceField": "$.expirationDate",
+      "targetField": "expirationDate",
+      "transformationType": "format",
+      "formatType": "date",
+      "format": "iso",
+      "required": true,
+      "description": "Policy expiration date in ISO format"
+    },
+    {
+      "sourceField": "$.insured.name",
+      "targetField": "insured.name",
+      "transformationType": "direct",
+      "required": true,
+      "validators": ["minLength:2", "maxLength:200"]
+    },
+    {
+      "sourceField": "$.insured.businessType",
+      "targetField": "insured.businessType",
+      "transformationType": "lookup",
+      "lookupTable": "businessTypeMapping",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.addressLine1",
+      "targetField": "insured.primaryAddress.street1",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.addressLine2",
+      "targetField": "insured.primaryAddress.street2",
+      "transformationType": "default",
+      "defaultValue": null
+    },
+    {
+      "sourceField": "$.insured.city",
+      "targetField": "insured.primaryAddress.city",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.state",
+      "targetField": "insured.primaryAddress.state",
+      "transformationType": "direct",
+      "required": true,
+      "validators": ["pattern:^[A-Z]{2}$"]
+    },
+    {
+      "sourceField": "$.insured.postalCode",
+      "targetField": "insured.primaryAddress.postalCode",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "targetField": "insured.primaryAddress.country",
+      "transformationType": "constant",
+      "constantValue": "USA"
+    },
+    {
+      "sourceField": "$.insured.annualRevenue",
+      "targetField": "insured.annualRevenue",
+      "transformationType": "direct",
+      "validators": ["min:0"]
+    },
+    {
+      "sourceField": "$.insured.employeeCount",
+      "targetField": "insured.employeeCount",
+      "transformationType": "direct",
+      "validators": ["min:0"]
+    },
+    {
+      "sourceField": "$.primaryContact",
+      "targetField": "insured.contacts[0]",
+      "transformationType": "function",
+      "functionName": "buildContact",
+      "description": "Build contact object from Guidewire format"
+    },
+    {
+      "sourceField": "$.coverages",
+      "targetField": "coverages",
+      "transformationType": "function",
+      "functionName": "transformCoverages",
+      "description": "Transform Guidewire coverages to CDM format"
+    },
+    {
+      "sourceField": "$.classification.code",
+      "targetField": "ratingFactors.classCode",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.yearsInBusiness",
+      "targetField": "ratingFactors.yearsInBusiness",
+      "transformationType": "direct"
+    },
+    {
+      "sourceField": "$.claimsHistory",
+      "targetField": "ratingFactors.claimsHistory",
+      "transformationType": "function",
+      "functionName": "transformClaimsHistory"
+    },
+    {
+      "targetField": "version",
+      "transformationType": "constant",
+      "constantValue": "gl-v1.2"
+    },
+    {
+      "targetField": "status",
+      "transformationType": "constant",
+      "constantValue": "quote"
+    }
+  ],
+  "lookupTables": {
+    "productCodeMapping": {
+      "name": "Product Code Mapping",
+      "description": "Map Guidewire product codes to CDM product lines",
+      "entries": {
+        "GL": "general-liability",
+        "PROP": "property",
+        "IM": "inland-marine",
+        "WC": "workers-comp",
+        "AUTO": "auto"
+      }
+    },
+    "businessTypeMapping": {
+      "name": "Business Type Mapping",
+      "entries": {
+        "MFG": "manufacturing",
+        "RETAIL": "retail",
+        "WHOLESALE": "wholesale",
+        "PROF_SVCS": "professional-services",
+        "CONSTR": "construction",
+        "HOSPITAL": "hospitality",
+        "HEALTH": "healthcare",
+        "TECH": "technology"
+      },
+      "defaultValue": "manufacturing"
+    }
+  },
+  "customFunctions": {
+    "buildContact": "return { firstName: value.firstName, lastName: value.lastName, email: value.email, phone: value.phone, type: 'primary' };",
+    "transformCoverages": "return value.map(cov => ({ id: cov.id || 'cov-' + Math.random(), type: 'general-liability', limit: cov.limit, deductible: cov.deductible, isPrimary: cov.primary || false }));",
+    "transformClaimsHistory": "if (!value) return { priorClaimsCount: 0, priorClaimsAmount: 0, yearsOfHistory: 5 }; return { priorClaimsCount: value.count || 0, priorClaimsAmount: value.totalAmount || 0, yearsOfHistory: value.years || 5, claims: value.claims || [] };"
+  },
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z",
+    "tags": ["guidewire", "general-liability", "production"]
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "id": "pol-prop-20260131-001",
+  "quoteNumber": "Q-PROP-2026-001234",
+  "version": "property-v1.0",
+  "productLine": "property",
+  "status": "quote",
+  "effectiveDate": "2026-03-01T00:00:00Z",
+  "expirationDate": "2027-03-01T00:00:00Z",
+  "createdAt": "2026-01-31T10:30:00Z",
+  "insured": {
+    "id": "ins-002",
+    "name": "Downtown Retail Plaza LLC",
+    "businessType": "retail",
+    "yearEstablished": 2015,
+    "taxId": "98-7654321",
+    "primaryAddress": {
+      "street1": "456 Main Street",
+      "city": "Austin",
+      "state": "TX",
+      "postalCode": "78701",
+      "country": "USA"
+    },
+    "contacts": [
+      {
+        "firstName": "Sarah",
+        "lastName": "Johnson",
+        "email": "sarah.johnson@retailplaza.example.com",
+        "phone": "+1-512-555-9876",
+        "type": "primary"
+      }
+    ],
+    "employeeCount": 25,
+    "annualRevenue": 3000000,
+    "yearsInBusiness": 11
+  },
+  "locations": [
+    {
+      "id": "loc-001",
+      "address": {
+        "street1": "456 Main Street",
+        "city": "Austin",
+        "state": "TX",
+        "postalCode": "78701",
+        "country": "USA"
+      },
+      "locationNumber": "001",
+      "isPrimary": true,
+      "buildingValue": 5000000,
+      "contentsValue": 1000000,
+      "businessIncomeValue": 500000
+    }
+  ],
+  "coverages": [
+    {
+      "id": "cov-001",
+      "type": "building",
+      "limit": 5000000,
+      "deductible": 10000,
+      "isPrimary": true
+    },
+    {
+      "id": "cov-002",
+      "type": "contents",
+      "limit": 1000000,
+      "deductible": 5000,
+      "isPrimary": false
+    },
+    {
+      "id": "cov-003",
+      "type": "business-income",
+      "limit": 500000,
+      "deductible": 72,
+      "isPrimary": false
+    }
+  ],
+  "ratingFactors": {
+    "classCode": "62140",
+    "territory": "TX-001",
+    "claimsHistory": {
+      "priorClaimsCount": 1,
+      "priorClaimsAmount": 25000,
+      "yearsOfHistory": 5,
+      "claims": [
+        {
+          "claimNumber": "CLM-2024-12345",
+          "lossDate": "2024-06-15T00:00:00Z",
+          "reportDate": "2024-06-16T00:00:00Z",
+          "lossType": "water-damage",
+          "status": "closed",
+          "paidAmount": 25000,
+          "description": "Broken pipe in restroom"
+        }
+      ]
+    }
+  },
+  "premium": {
+    "base": 8500.0,
+    "surcharges": [
+      {
+        "type": "PriorLossSurcharge",
+        "description": "Prior Water Damage Claim",
+        "amount": 425.0,
+        "percentage": 5.0
+      }
+    ],
+    "discounts": [
+      {
+        "type": "SprinklerDiscount",
+        "description": "Wet Pipe Sprinkler System",
+        "amount": -850.0,
+        "percentage": 10.0
+      }
+    ],
+    "taxes": 80.75,
+    "fees": 75.0,
+    "total": 8230.75
+  },
+  "extensions": {
+    "utilityServices": {
+      "included": true,
+      "limit": 50000
+    },
+    "outdoorProperty": {
+      "included": true,
+      "limit": 25000
+    },
+    "spoilage": {
+      "included": false
+    },
+    "valuablePapers": {
+      "included": true,
+      "limit": 100000
+    },
+    "windHailExcluded": false,
+    "floodExcluded": true,
+    "earthquakeExcluded": true,
+    "functionalReplacementCost": false,
+    "priorLosses": {
+      "water": 25000,
+      "fire": 0,
+      "theft": 0,
+      "wind": 0,
+      "other": 0
+    }
+  }
+}

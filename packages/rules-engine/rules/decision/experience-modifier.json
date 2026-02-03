@@ -1,0 +1,101 @@
+{
+  "id": "experience-modifier-gl",
+  "name": "Experience Modifier - General Liability",
+  "description": "Determine experience modification factor based on claims history",
+  "type": "decision",
+  "status": "active",
+  "version": "1.0.0",
+  "productLine": "general-liability",
+  "effectiveDate": "2026-01-01T00:00:00Z",
+  "priority": 200,
+  "conditions": [
+    {
+      "field": "priorClaimsCount",
+      "label": "Number of Prior Claims",
+      "type": "number"
+    },
+    {
+      "field": "priorClaimsAmount",
+      "label": "Total Claims Amount",
+      "type": "number"
+    },
+    {
+      "field": "yearsInBusiness",
+      "label": "Years in Business",
+      "type": "number"
+    }
+  ],
+  "rows": [
+    {
+      "conditions": {
+        "priorClaimsCount": 0,
+        "priorClaimsAmount": 0,
+        "yearsInBusiness": { "min": 5 }
+      },
+      "outcome": {
+        "modifier": 0.95,
+        "description": "No claims, 5+ years experience - 5% credit"
+      },
+      "description": "Clean history with experience"
+    },
+    {
+      "conditions": {
+        "priorClaimsCount": 0,
+        "priorClaimsAmount": 0,
+        "yearsInBusiness": { "min": 0, "max": 4 }
+      },
+      "outcome": {
+        "modifier": 1.00,
+        "description": "No claims, new business - no adjustment"
+      },
+      "description": "Clean history, limited experience"
+    },
+    {
+      "conditions": {
+        "priorClaimsCount": 1,
+        "priorClaimsAmount": { "min": 0, "max": 50000 }
+      },
+      "outcome": {
+        "modifier": 1.00,
+        "description": "One small claim - no adjustment"
+      }
+    },
+    {
+      "conditions": {
+        "priorClaimsCount": 1,
+        "priorClaimsAmount": { "min": 50000 }
+      },
+      "outcome": {
+        "modifier": 1.10,
+        "description": "One large claim - 10% increase"
+      }
+    },
+    {
+      "conditions": {
+        "priorClaimsCount": { "min": 2, "max": 3 }
+      },
+      "outcome": {
+        "modifier": 1.25,
+        "description": "Multiple claims - 25% increase"
+      }
+    },
+    {
+      "conditions": {
+        "priorClaimsCount": { "min": 4 }
+      },
+      "outcome": {
+        "modifier": 1.40,
+        "description": "High frequency claims - 40% increase"
+      }
+    }
+  ],
+  "defaultOutcome": {
+    "modifier": 1.00,
+    "description": "Default - no adjustment"
+  },
+  "tags": ["experience", "claims", "modifier"],
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z"
+  }
+}

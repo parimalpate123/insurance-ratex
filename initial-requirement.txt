@@ -1,0 +1,120 @@
+InsurRateX: 
+
+Tagline: “The Universal Exchange for Insurance Rating Intelligence.”
+
+InsurRateX is a cloud-native, pluggable interoperability platform that connects policy systems like Guidewire, Duck Creek, or Salesforce with any rating engine — whether on-premises or SaaS. Acting as the universal exchange, it standardizes data through a canonical model, manages transformations, and accelerates product rollout across lines like Inland Marine, General Liability, and Property.
+By embedding insurance rating intelligence, InsurRateX empowers business and technical teams alike with AI-assisted mapping, reusable integrations, and a self-service experience. This reduces development effort, shortens time to market, and ensures consistent, auditable rating across organizations.
+
+So your product positioning becomes:
+* The Universal Exchange → emphasizes interoperability and reusability.
+* Insurance Rating Intelligence → emphasizes AI-driven mapping, automation, and insights.
+
+
+Prototype Scope Document: InsurRateX
+The Universal Exchange for Insurance Rating Intelligence
+
+Objective
+Build a cloud-native, reusable interoperability platform that enables insurance policy systems (e.g., Guidewire, Salesforce, Duck Creek) to exchange rating data seamlessly with multiple rating engines (on-prem or SaaS).
+The platform — InsurRateX — will:
+* Act as the universal exchange for insurance rating data.
+* Provide insurance rating intelligence through AI-assisted mapping and transformation.
+* Enable reusability across organizations with minimal customization, through modular adapters and a canonical model.
+* Support iterative development of mappings, tracked via tools like JIRA.
+
+In-Scope (Prototype Deliverables)
+1. Cloud-Native Foundation
+* Kubernetes deployment to support scalability, low-latency, and fast developer experience.
+* Stateless microservices architecture with REST APIs.
+* CI/CD pipeline for containerized deployment.
+2. Canonical Data Model (CDM)
+* JSON schema representing policy, risk, and coverage data.
+* Validations for inbound requests.
+* Extensible design to support multiple product lines (Inland Marine, General Liability, Deluxe Property, etc.).
+3. Reusability Features
+* Plug-and-play adapters for upstream systems (e.g., Guidewire, Salesforce).
+* Reusable mapping artifacts stored in a registry with versioning.
+* Extensible connector framework for new rating engines with minimal coding.
+* Configuration-driven customization (e.g., lookup tables, product definitions) instead of bespoke code.
+4. Guidewire Payload Handling
+* Accept Guidewire-style JSON payload as input.
+* Transform request into canonical form.
+* Send request to mock rating engine adapter.
+* Transform rating engine response back into Guidewire-understandable JSON payload.
+5. Mapping & Transformation Engine
+* Declarative, version-controlled mapping rules.
+* Transformations: lookups, conditionals, format conversions.
+* Iterative mapping updates tracked as JIRA stories.
+6. Connectors / Adapters
+* Mock Guidewire adapter (JSON input/output).
+* Mock rating engine adapter (JSON engine request/response).
+7. Orchestration Layer
+* Stateless orchestrator service to handle request routing, retries, and correlation IDs.
+* Extensible to multiple rating engines and product lines.
+8. Self-Service Business UI (Prototype)
+* Mapping canvas (drag/drop source → canonical target).
+* Test harness to upload payloads and preview transformations.
+* Versioning & basic approval workflow.
+9. AI Assistance (Prototype)
+* AI-driven mapping suggestions.
+* Natural language → draft transformation rule.
+10. Observability & Audit
+* Structured logging with correlation IDs.
+* Trace request path and applied mapping version.
+* Simple dashboard for monitoring and debugging.
+
+Out of Scope (Prototype Phase)
+* Full enterprise security (use basic auth for POC).
+* Integration with real Guidewire/rating engines (use mocks).
+* High-volume performance testing.
+* Advanced business rule authoring (DMN/Drools deferred).
+
+Success Criteria
+* Demonstrate end-to-end flow: Guidewire JSON → CDM → Mapping → Rating Engine (mock) → Response → Re-transformation → Guidewire JSON.
+* Show that business users can create/modify mappings without developer intervention.
+* Reusable connectors and mapping artifacts prove plug-and-play potential.
+* Iterative mapping changes tracked via JIRA backlog.
+* AI suggestions generate at least one valid mapping.
+* Prototype runs reliably on Kubernetes.
+
+Basic Flow Diagram
+        ┌─────────────────────┐
+        │  Guidewire JSON In  │
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │   GW Adapter        │
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │ Canonical Data Model│
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────────────┐
+        │ Mapping & Transformation    │
+        │ (Reusable rules + AI assist)│
+        └─────────┬───────────────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │ Rating Engine       │
+        │  Adapter (Mock)     │
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │  Engine Response    │
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │ Re-Transformation   │
+        │ (CDM → GW JSON Out) │
+        └─────────┬───────────┘
+                  │
+                  ▼
+        ┌─────────────────────┐
+        │ Guidewire Response  │
+        └─────────────────────┘

@@ -1,0 +1,147 @@
+{
+  "success": true,
+  "requestId": "example-gl-001",
+  "totalPremium": 16843.42,
+  "premiumBreakdown": {
+    "basePremium": 13250.00,
+    "adjustments": [
+      {
+        "type": "surcharge",
+        "name": "California Territorial Surcharge",
+        "description": "State-specific territorial adjustment for California",
+        "amount": 662.50,
+        "percentage": 5.0,
+        "appliedTo": "basePremium"
+      },
+      {
+        "type": "modifier",
+        "name": "Experience Modifier Based on Loss History",
+        "description": "Loss experience modification based on 3-year history",
+        "amount": 1325.00,
+        "percentage": 10.0,
+        "appliedTo": "basePremium"
+      },
+      {
+        "type": "surcharge",
+        "name": "High Revenue Surcharge",
+        "description": "Applied for businesses with annual revenue > $5M",
+        "amount": 530.00,
+        "percentage": 4.0,
+        "appliedTo": "basePremium"
+      },
+      {
+        "type": "discount",
+        "name": "Multi-Year Policyholder Discount",
+        "description": "Discount for businesses with 10+ years in business",
+        "amount": -265.00,
+        "percentage": -2.0,
+        "appliedTo": "basePremium"
+      }
+    ],
+    "subtotal": 15502.50,
+    "taxes": 1340.92,
+    "fees": 0.00,
+    "surcharges": 1192.50,
+    "modifiers": 1325.00,
+    "discounts": -265.00,
+    "rulesApplied": [
+      "State Territorial Surcharges",
+      "Experience Modifier Based on Loss History",
+      "High Revenue Surcharge",
+      "Multi-Year Policyholder Discount"
+    ]
+  },
+  "coverageBreakdown": [
+    {
+      "coverageId": "cov-001",
+      "coverageType": "general-aggregate",
+      "limit": 2000000,
+      "deductible": 5000,
+      "premium": 9500.00,
+      "rate": 0.475
+    },
+    {
+      "coverageId": "cov-002",
+      "coverageType": "products-completed-operations",
+      "limit": 2000000,
+      "deductible": 5000,
+      "premium": 2850.00,
+      "rate": 0.1425
+    },
+    {
+      "coverageId": "cov-003",
+      "coverageType": "personal-advertising-injury",
+      "limit": 1000000,
+      "deductible": 2500,
+      "premium": 900.00,
+      "rate": 0.09
+    }
+  ],
+  "cdmData": {
+    "policyId": "POL-2026-GL-001234",
+    "effectiveDate": "2026-03-01",
+    "expirationDate": "2027-03-01",
+    "insuredName": "Acme Manufacturing Corporation",
+    "state": "CA",
+    "productLine": "general-liability",
+    "totalLimit": 2000000,
+    "totalDeductible": 5000,
+    "classificationCode": "91580"
+  },
+  "metadata": {
+    "executionTime": 1687,
+    "timestamp": "2026-02-01T15:23:45.123Z",
+    "steps": [
+      {
+        "step": "transform_source_to_cdm",
+        "duration": 298,
+        "success": true,
+        "details": {
+          "fieldsMapped": 45,
+          "transformationsApplied": 12
+        }
+      },
+      {
+        "step": "apply_business_rules",
+        "duration": 623,
+        "success": true,
+        "details": {
+          "rulesEvaluated": 28,
+          "rulesExecuted": 12,
+          "lookupTablesUsed": 3,
+          "decisionTablesUsed": 2
+        }
+      },
+      {
+        "step": "transform_cdm_to_engine",
+        "duration": 234,
+        "success": true,
+        "details": {
+          "fieldsMapped": 38,
+          "transformationsApplied": 9
+        }
+      },
+      {
+        "step": "calculate_premium",
+        "duration": 532,
+        "success": true,
+        "details": {
+          "ratingEngine": "earnix",
+          "coveragesRated": 3,
+          "basePremium": 13250.00
+        }
+      }
+    ],
+    "sourceSystem": "guidewire",
+    "ratingEngine": "earnix",
+    "productLine": "general-liability",
+    "cdmVersion": "gl-v1.2",
+    "mappingVersion": {
+      "sourceTocdm": "1.2.0",
+      "cdmToEngine": "1.0.0"
+    },
+    "rulesVersion": "2026.1.0"
+  },
+  "warnings": [],
+  "errors": []
+}

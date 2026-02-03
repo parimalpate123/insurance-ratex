@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  # Guidewire PolicyCenter Mock
+  guidewire-mock:
+    build:
+      context: ./packages/mocks/guidewire-mock
+      dockerfile: Dockerfile
+    container_name: insurratex-guidewire-mock
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - LOG_LEVEL=debug
+    volumes:
+      - ./packages/mocks/guidewire-mock/src:/app/src
+      - ./packages/mocks/guidewire-mock/data:/app/data
+    networks:
+      - insurratex-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Earnix Rating Engine Mock
+  earnix-mock:
+    build:
+      context: ./packages/mocks/earnix-mock
+      dockerfile: Dockerfile
+    container_name: insurratex-earnix-mock
+    ports:
+      - "4001:4001"
+    environment:
+      - NODE_ENV=development
+      - PORT=4001
+      - LOG_LEVEL=debug
+    volumes:
+      - ./packages/mocks/earnix-mock/src:/app/src
+      - ./packages/mocks/earnix-mock/rules:/app/rules
+    networks:
+      - insurratex-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # InsurRateX Orchestrator
+  orchestrator:
+    build:
+      context: .
+      dockerfile: ./apps/orchestrator/Dockerfile
+    container_name: insurratex-orchestrator
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - GUIDEWIRE_URL=http://guidewire-mock:3001
+      - EARNIX_URL=http://earnix-mock:4001/earnix/api/v1
+      - LOG_LEVEL=debug
+      - ENABLE_RULES=true
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-us.anthropic.claude-3-5-sonnet-20241022-v2:0}
+      - ENABLE_AI_FEATURES=${ENABLE_AI_FEATURES:-true}
+    volumes:
+      - ./apps/orchestrator/src:/app/src
+    networks:
+      - insurratex-network
+    depends_on:
+      - guidewire-mock
+      - earnix-mock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Mapping UI
+  mapping-ui:
+    build:
+      context: ./apps/mapping-ui
+      dockerfile: Dockerfile
+    container_name: insurratex-mapping-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_URL=http://orchestrator:3000
+    networks:
+      - insurratex-network
+    depends_on:
+      - orchestrator
+    restart: unless-stopped
+
+  # Rules UI
+  rules-ui:
+    build:
+      context: ./apps/rules-ui
+      dockerfile: Dockerfile
+    container_name: insurratex-rules-ui
+    ports:
+      - "8081:8081"
+    environment:
+      - VITE_API_URL=http://orchestrator:3000
+    networks:
+      - insurratex-network
+    depends_on:
+      - orchestrator
+    restart: unless-stopped
+
+  # PostgreSQL Database (Week 4+)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: insurratex-postgres
+  #   ports:
+  #     - "5432:5432"
+  #   environment:
+  #     - POSTGRES_DB=insurratex
+  #     - POSTGRES_USER=insurratex
+  #     - POSTGRES_PASSWORD=dev_password_change_in_prod
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   networks:
+  #     - insurratex-network
+  #   restart: unless-stopped
+
+networks:
+  insurratex-network:
+    driver: bridge
+    name: insurratex-network
+
+# volumes:
+#   postgres-data:
+#     name: insurratex-postgres-data

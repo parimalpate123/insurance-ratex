@@ -1,0 +1,94 @@
+{
+  "id": "cdm-earnix-gl-v1",
+  "name": "CDM to Earnix - General Liability",
+  "description": "Mapping configuration for CDM to Earnix Rating Engine for GL policies",
+  "version": "1.0.0",
+  "sourceSystem": "cdm",
+  "targetSystem": "earnix",
+  "direction": "from-cdm",
+  "productLine": "general-liability",
+  "mappings": [
+    {
+      "sourceField": "$.quoteNumber",
+      "targetField": "requestId",
+      "transformationType": "concat",
+      "concatFields": ["quoteNumber"],
+      "concatSeparator": "-",
+      "functionName": "generateRequestId",
+      "description": "Generate unique request ID"
+    },
+    {
+      "sourceField": "$.productLine",
+      "targetField": "productLine",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.version",
+      "targetField": "productVersion",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.primaryAddress.state",
+      "targetField": "insured.state",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.businessType",
+      "targetField": "insured.businessType",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.annualRevenue",
+      "targetField": "insured.annualRevenue",
+      "transformationType": "default",
+      "defaultValue": 0,
+      "required": true
+    },
+    {
+      "sourceField": "$.insured.employeeCount",
+      "targetField": "insured.employeeCount",
+      "transformationType": "direct"
+    },
+    {
+      "sourceField": "$.coverages",
+      "targetField": "coverages",
+      "transformationType": "function",
+      "functionName": "transformCoveragesForEarnix",
+      "required": true,
+      "description": "Transform CDM coverages to Earnix format"
+    },
+    {
+      "sourceField": "$.ratingFactors.classCode",
+      "targetField": "ratingFactors.classCode",
+      "transformationType": "direct",
+      "required": true
+    },
+    {
+      "sourceField": "$.ratingFactors.yearsInBusiness",
+      "targetField": "ratingFactors.yearsInBusiness",
+      "transformationType": "direct"
+    },
+    {
+      "sourceField": "$.ratingFactors.claimsHistory",
+      "targetField": "ratingFactors.claimsHistory",
+      "transformationType": "function",
+      "functionName": "transformClaimsForEarnix",
+      "description": "Transform claims history to Earnix format"
+    }
+  ],
+  "lookupTables": {},
+  "customFunctions": {
+    "generateRequestId": "return 'rate-' + Date.now() + '-' + Math.random().toString(36).substring(7);",
+    "transformCoveragesForEarnix": "return value.map(cov => ({ type: cov.type, limit: cov.limit, deductible: cov.deductible }));",
+    "transformClaimsForEarnix": "if (!value) return { priorClaimsCount: 0, priorClaimsAmount: 0 }; return { priorClaimsCount: value.priorClaimsCount, priorClaimsAmount: value.priorClaimsAmount };"
+  },
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z",
+    "tags": ["earnix", "general-liability", "production"]
+  }
+}

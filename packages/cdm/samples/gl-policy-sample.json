@@ -1,0 +1,130 @@
+{
+  "id": "pol-gl-20260131-001",
+  "quoteNumber": "Q-GL-2026-001234",
+  "version": "gl-v1.2",
+  "productLine": "general-liability",
+  "status": "quote",
+  "effectiveDate": "2026-03-01T00:00:00Z",
+  "expirationDate": "2027-03-01T00:00:00Z",
+  "createdAt": "2026-01-31T10:30:00Z",
+  "insured": {
+    "id": "ins-001",
+    "name": "Acme Manufacturing Corp",
+    "dba": "Acme Products",
+    "businessType": "manufacturing",
+    "yearEstablished": 2010,
+    "taxId": "12-3456789",
+    "website": "https://acmemanufacturing.example.com",
+    "primaryAddress": {
+      "street1": "1234 Industrial Parkway",
+      "city": "San Francisco",
+      "state": "CA",
+      "postalCode": "94102",
+      "country": "USA"
+    },
+    "contacts": [
+      {
+        "firstName": "John",
+        "lastName": "Smith",
+        "email": "john.smith@acme.example.com",
+        "phone": "+1-415-555-1234",
+        "type": "primary"
+      }
+    ],
+    "employeeCount": 50,
+    "annualRevenue": 5000000,
+    "yearsInBusiness": 16
+  },
+  "agent": {
+    "firstName": "Jane",
+    "lastName": "Broker",
+    "email": "jane.broker@insurance.example.com",
+    "phone": "+1-415-555-5678",
+    "type": "agent"
+  },
+  "locations": [
+    {
+      "id": "loc-001",
+      "address": {
+        "street1": "1234 Industrial Parkway",
+        "city": "San Francisco",
+        "state": "CA",
+        "postalCode": "94102",
+        "country": "USA"
+      },
+      "locationNumber": "001",
+      "isPrimary": true,
+      "buildingValue": 2000000,
+      "contentsValue": 500000
+    }
+  ],
+  "coverages": [
+    {
+      "id": "cov-001",
+      "type": "general-liability",
+      "limit": 2000000,
+      "deductible": 5000,
+      "isPrimary": true,
+      "perOccurrence": 2000000,
+      "aggregate": 4000000
+    }
+  ],
+  "ratingFactors": {
+    "classCode": "91580",
+    "yearsInBusiness": 16,
+    "claimsHistory": {
+      "priorClaimsCount": 0,
+      "priorClaimsAmount": 0,
+      "yearsOfHistory": 5,
+      "claims": []
+    }
+  },
+  "premium": {
+    "base": 12500.0,
+    "surcharges": [
+      {
+        "type": "TerritorialSurcharge",
+        "description": "California High-Risk Territory",
+        "amount": 625.0,
+        "percentage": 5.0
+      }
+    ],
+    "discounts": [
+      {
+        "type": "ClaimsFreeDiscount",
+        "description": "5-Year Claims Free",
+        "amount": -625.0,
+        "percentage": 5.0
+      }
+    ],
+    "taxes": 125.0,
+    "fees": 50.0,
+    "total": 12675.0
+  },
+  "extensions": {
+    "classifications": [
+      {
+        "classCode": "91580",
+        "description": "Machine Shops",
+        "exposure": 5000000,
+        "exposureBase": "revenue",
+        "rate": 2.5,
+        "premium": 12500.0
+      }
+    ],
+    "additionalInsureds": [
+      "ABC Contractors Inc.",
+      "XYZ Suppliers LLC"
+    ],
+    "waiverOfSubrogation": true,
+    "blanketAdditionalInsured": true,
+    "primaryNonContributory": true,
+    "liquorLiability": {
+      "included": false
+    },
+    "contractualLiability": {
+      "included": true,
+      "description": "Standard contractual liability coverage"
+    }
+  }
+}

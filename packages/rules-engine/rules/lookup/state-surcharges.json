@@ -1,0 +1,30 @@
+{
+  "id": "state-surcharges-gl",
+  "name": "State Territorial Surcharges - General Liability",
+  "description": "Percentage surcharges applied based on insured state for GL policies",
+  "type": "lookup",
+  "status": "active",
+  "version": "1.0.0",
+  "productLine": "general-liability",
+  "effectiveDate": "2026-01-01T00:00:00Z",
+  "priority": 100,
+  "keyField": "state",
+  "table": {
+    "CA": 0.05,
+    "NY": 0.04,
+    "FL": 0.03,
+    "TX": -0.02,
+    "IL": 0.02,
+    "PA": 0.01,
+    "OH": 0.00,
+    "GA": 0.00,
+    "NC": -0.01,
+    "MI": 0.02
+  },
+  "defaultValue": 0.00,
+  "tags": ["surcharge", "territorial", "state"],
+  "metadata": {
+    "createdBy": "InsurRateX Team",
+    "createdAt": "2026-01-31T00:00:00Z"
+  }
+}

@@ -1,0 +1,625 @@
+<mxfile host="app.diagrams.net" modified="2026-01-31T10:00:00.000Z" agent="Claude" version="24.0.0">
+  <diagram name="1. Overall Architecture" id="architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title1" value="InsurRateX - Overall Architecture (Hybrid Library + Framework)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="policy-systems" value="Policy Systems" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="440" y="80" width="320" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="guidewire" value="Guidewire" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="450" y="140" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="duckcreek" value="Duck Creek" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="555" y="140" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="salesforce" value="Salesforce" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="660" y="140" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="policy-systems" target="adapter-registry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="adapter-registry" value="ADAPTER REGISTRY (Pluggable)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="440" y="220" width="320" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-adapter" value="GW Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="450" y="280" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="dc-adapter" value="DC Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="555" y="280" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sf-adapter" value="SF Adapter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="660" y="280" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="adapter-registry" target="cdm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cdm" value="CANONICAL DATA MODEL (CDM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="440" y="360" width="320" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cdm-base" value="Base Model&#xa;(80% common)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="450" y="420" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cdm-ext" value="Extensions&#xa;(GL, Property, etc)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="610" y="420" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="cdm" target="mapping-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mapping-engine" value="MAPPING &amp; TRANSFORMATION ENGINE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="400" y="510" width="400" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mapping-registry" value="Mapping Registry&#xa;(Versioned)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="410" y="570" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="transformers" value="Transformers&#xa;(date, lookup, calc)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="540" y="570" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ai-assist" value="AI Assistant&#xa;(Auto-suggest)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="670" y="570" width="120" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rules-engine" value="RULES ENGINE" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="840" y="510" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lookup-tables" value="Lookup Tables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="850" y="570" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="decision-tables" value="Decision Tables" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="850" y="610" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="conditional-rules" value="Conditional Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="850" y="650" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ai-nlp" value="AI NLP Generator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="850" y="690" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-rules" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="rules-engine" target="mapping-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;" edge="1" parent="1" source="mapping-engine" target="rating-adapters">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="650" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="rating-adapters" value="RATING ENGINE ADAPTERS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="440" y="650" width="320" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-adapter" value="Earnix (Primary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="450" y="710" width="120" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="iso-adapter" value="ISO" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="590" y="710" width="70" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="custom-adapter" value="Custom" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="680" y="710" width="70" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="framework-ui" value="FRAMEWORK UI&#xa;(Business Analysts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="360" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mapping-canvas" value="Mapping Canvas&#xa;(Drag-Drop)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="50" y="420" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rule-builder" value="Rule Builder&#xa;(NLP + Visual)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="50" y="470" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="test-harness" value="Test Harness&#xa;(Preview)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="50" y="520" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="library-sdk" value="LIBRARY SDK&#xa;(Developers)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="960" y="220" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="adapter-interfaces" value="Adapter Interfaces" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="970" y="280" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="validators" value="Validators" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="970" y="320" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="transformers-lib" value="Transformers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="970" y="360" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="utilities" value="Utilities (Logger, Retry)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="970" y="400" width="180" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-to-mapping" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="framework-ui" target="mapping-engine">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sdk-to-adapters" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=classic;endFill=1;dashed=1;" edge="1" parent="1" source="library-sdk" target="adapter-registry">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-title" value="Legend:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="60" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-solid" value="Data Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="70" y="645" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-solid-line" value="" style="endArrow=classic;html=1;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="40" y="655" as="sourcePoint" />
+            <mxPoint x="65" y="655" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="legend-dashed" value="Uses/Configures" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="70" y="670" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend-dashed-line" value="" style="endArrow=classic;html=1;strokeWidth=2;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="40" y="680" as="sourcePoint" />
+            <mxPoint x="65" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="2. End-to-End Flow" id="flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="flow-title" value="End-to-End Data Flow: Guidewire to Earnix" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-1" value="1. Guidewire PolicyCenter Request" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="80" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-1" target="flow-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-2" value="2. Adapter Parse" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="480" y="150" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-2" target="flow-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-3" value="3. Transform to CDM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="480" y="220" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-3" target="flow-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-4" value="4. Apply Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="480" y="290" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-4" target="flow-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-5" value="5. Send to Earnix Rating Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="360" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-5" target="flow-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-6" value="6. Earnix Returns Premium" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="430" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-6" target="flow-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-7" value="7. Transform Response" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="480" y="500" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-7" target="flow-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-8" value="8. Apply Response Rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="480" y="570" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-arrow-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="flow-8" target="flow-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-9" value="9. Return Response to Guidewire" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="640" width="200" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="flow-note" value="Total: 387ms (GW Mock + CDM + Earnix Mock)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="430" y="710" width="300" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="3. BA User Flow" id="ba-flow">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="ba-title" value="BA User Flow: Creating Mapping (No Code)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-actor" value="Business Analyst" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="80" y="90" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-1" value="1. Login to InsurRateX UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="200" y="100" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-1" target="ba-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-2" value="2. Select Create Mapping&#xa;(Guidewire to Earnix)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="200" y="170" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-2" target="ba-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-3" value="3. Upload Guidewire GL Payload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="200" y="240" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-3" target="ba-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-4" value="4. AI Auto-Suggest (15 fields)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="310" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-4" target="ba-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-5" value="5. Review and Edit Mappings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="200" y="380" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-5" target="ba-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-6" value="6. Test with Sample Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="200" y="450" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-6" target="ba-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-7" value="7. Version and Submit" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="200" y="520" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-arrow-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeWidth=2;endArrow=classic;" edge="1" parent="1" source="ba-7" target="ba-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-8" value="8. Deploy to DEV/QA/PROD" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="590" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-time" value="Total Time: ~25 minutes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=14" vertex="1" parent="1">
+          <mxGeometry x="200" y="660" width="180" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-mockup" value="Mapping Canvas UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="450" y="100" width="650" height="600" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-left" value="Source Schema (Guidewire)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="470" y="140" width="280" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-right" value="Target Schema (CDM)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="800" y="140" width="280" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-field-1" value="PolicyNumber" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="480" y="180" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-field-2" value="EffectiveDate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="480" y="220" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-cdm-1" value="policy.id" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="950" y="180" width="120" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-cdm-2" value="policy.effectiveDate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="220" width="150" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-arrow" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#d6b656;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="760" y="195" as="sourcePoint" />
+            <mxPoint x="790" y="195" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="ba-ui-test" value="Test Harness" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="470" y="420" width="610" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-validate" value="Validation: PASSED" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="480" y="530" width="590" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ba-ui-actions" value="Save v1.0 | Submit for Approval | Deploy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="470" y="600" width="610" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="4. Mock Architecture" id="mock-arch">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="mock-title" value="Mock Architecture: Guidewire + Earnix Development Environment" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="docker-compose" value="Docker Compose Environment" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=16;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1080" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="guidewire-mock-container" value="Guidewire Mock Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="80" y="140" width="300" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-mock-port" value="Port: 3001" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="90" y="170" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-mock-endpoints" value="Endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="100" y="200" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-endpoint-1" value="POST /pc/rating/submit" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="110" y="240" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-endpoint-2" value="GET /pc/policy/{id}" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="110" y="275" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-endpoint-3" value="POST /pc/policy/bind" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="110" y="310" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-mock-features" value="Features" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="100" y="350" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-feature-1" value="- Realistic GL payload structures" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="110" y="385" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gw-feature-2" value="- Sample policies (manufacturing, retail)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="110" y="400" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orchestrator-container" value="InsurRateX Orchestrator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="440" y="140" width="280" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-port" value="Port: 3000" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="450" y="170" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-components" value="Components" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="460" y="200" width="240" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-comp-1" value="Adapter Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="470" y="240" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-comp-2" value="CDM Transformer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="470" y="280" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-comp-3" value="Mapping Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="470" y="320" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="orch-comp-4" value="Rules Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="470" y="360" width="220" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-mock-container" value="Earnix Mock Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="780" y="140" width="300" height="280" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-mock-port" value="Port: 4001" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="790" y="170" width="80" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-mock-endpoints" value="Endpoints" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="800" y="200" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-endpoint-1" value="POST /earnix/api/v1/rate" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="810" y="240" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-endpoint-2" value="POST /earnix/api/v1/validate" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="810" y="275" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-mock-features" value="Rating Engine Logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="800" y="315" width="260" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-feature-1" value="- Base rate calculation" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="810" y="350" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-feature-2" value="- Territorial factors (by state)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="810" y="365" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-feature-3" value="- Experience modifiers" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="810" y="380" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="earnix-feature-4" value="- Surcharge rules (configurable)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="810" y="395" width="240" height="15" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-gw-to-orch" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#82b366;" edge="1" parent="1" source="guidewire-mock-container" target="orchestrator-container">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="380" y="280" as="sourcePoint" />
+            <mxPoint x="440" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-gw-label" value="GL Policy Request" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="350" y="250" width="100" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-orch-to-earnix" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#6c8ebf;" edge="1" parent="1" source="orchestrator-container" target="earnix-mock-container">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="720" y="280" as="sourcePoint" />
+            <mxPoint x="780" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-earnix-label" value="CDM Rating Request" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="690" y="250" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="arrow-earnix-response" value="" style="endArrow=classic;html=1;strokeWidth=3;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="earnix-mock-container" target="orchestrator-container">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="780" y="310" as="sourcePoint" />
+            <mxPoint x="720" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="arrow-response-label" value="Premium Response" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="690" y="310" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-box" value="Usage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="1000" height="140" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-cmd-1" value="Start all services:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="100" y="490" width="150" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-cmd-1-text" value="docker-compose up" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="100" y="515" width="300" height="25" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-urls" value="Service URLs:" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="500" y="490" width="150" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-url-1" value="Guidewire: http://localhost:3001" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="500" y="515" width="250" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-url-2" value="Earnix: http://localhost:4001" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="500" y="535" width="250" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="usage-url-3" value="Orchestrator: http://localhost:3000" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="500" y="555" width="250" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefits-box" value="Benefits" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;align=center;verticalAlign=top" vertex="1" parent="1">
+          <mxGeometry x="80" y="630" width="1000" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-1" value="- No enterprise licenses needed for development" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="660" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-2" value="- Fast iteration on CDM and mappings" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="680" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-3" value="- Offline development (no network dependencies)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="700" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-4" value="- Realistic premium calculations demonstrate value" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="450" y="660" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-5" value="- BA can test rule changes immediately" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="450" y="680" width="300" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="benefit-6" value="- Easy migration to production systems later" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="450" y="700" width="300" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

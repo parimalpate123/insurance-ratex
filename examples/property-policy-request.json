@@ -1,0 +1,116 @@
+{
+  "sourceSystem": "guidewire",
+  "ratingEngine": "earnix",
+  "productLine": "property",
+  "requestId": "example-property-001",
+  "applyRules": true,
+  "policyData": {
+    "quoteNumber": "Q-2026-PROP-005678",
+    "productCode": "PROP",
+    "effectiveDate": "2026-04-01",
+    "expirationDate": "2027-04-01",
+    "insured": {
+      "name": "Downtown Commercial Properties LLC",
+      "businessType": "REAL_ESTATE",
+      "addressLine1": "456 Market Street",
+      "city": "San Francisco",
+      "state": "CA",
+      "postalCode": "94105",
+      "annualRevenue": 12000000,
+      "employeeCount": 50,
+      "yearsInBusiness": 20
+    },
+    "properties": [
+      {
+        "id": "prop-001",
+        "locationNumber": "001",
+        "address": {
+          "addressLine1": "456 Market Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "postalCode": "94105"
+        },
+        "buildingType": "COMMERCIAL_OFFICE",
+        "constructionType": "FRAME",
+        "yearBuilt": 1995,
+        "squareFootage": 50000,
+        "numberOfStories": 5,
+        "occupancy": "OFFICE",
+        "protectionClass": 3,
+        "distanceToFireStation": 0.5,
+        "sprinklerSystem": true,
+        "fireAlarm": true,
+        "securitySystem": true,
+        "buildingValue": 15000000,
+        "contentsValue": 2000000,
+        "businessIncomeValue": 3000000
+      },
+      {
+        "id": "prop-002",
+        "locationNumber": "002",
+        "address": {
+          "addressLine1": "789 Pine Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "postalCode": "94108"
+        },
+        "buildingType": "RETAIL",
+        "constructionType": "MASONRY",
+        "yearBuilt": 2005,
+        "squareFootage": 25000,
+        "numberOfStories": 2,
+        "occupancy": "RETAIL",
+        "protectionClass": 2,
+        "distanceToFireStation": 0.3,
+        "sprinklerSystem": true,
+        "fireAlarm": true,
+        "securitySystem": true,
+        "buildingValue": 8000000,
+        "contentsValue": 1500000,
+        "businessIncomeValue": 1000000
+      }
+    ],
+    "coverages": [
+      {
+        "id": "cov-001",
+        "type": "building",
+        "limit": 23000000,
+        "deductible": 25000,
+        "primary": true
+      },
+      {
+        "id": "cov-002",
+        "type": "contents",
+        "limit": 3500000,
+        "deductible": 10000,
+        "primary": false
+      },
+      {
+        "id": "cov-003",
+        "type": "business-income",
+        "limit": 4000000,
+        "deductible": 5000,
+        "primary": false
+      }
+    ],
+    "lossHistory": [
+      {
+        "year": 2025,
+        "claimCount": 1,
+        "totalIncurred": 45000,
+        "claimType": "WATER_DAMAGE"
+      },
+      {
+        "year": 2024,
+        "claimCount": 0,
+        "totalIncurred": 0
+      },
+      {
+        "year": 2023,
+        "claimCount": 1,
+        "totalIncurred": 12000,
+        "claimType": "THEFT"
+      }
+    ]
+  }
+}

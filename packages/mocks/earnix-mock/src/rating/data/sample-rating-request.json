@@ -1,0 +1,26 @@
+{
+  "requestId": "rate-req-20260131-001",
+  "productLine": "general-liability",
+  "productVersion": "gl-v1.2",
+  "insured": {
+    "state": "CA",
+    "businessType": "manufacturing",
+    "annualRevenue": 5000000,
+    "employeeCount": 50
+  },
+  "coverages": [
+    {
+      "type": "general-liability",
+      "limit": 2000000,
+      "deductible": 5000
+    }
+  ],
+  "ratingFactors": {
+    "classCode": "91580",
+    "yearsInBusiness": 5,
+    "claimsHistory": {
+      "priorClaimsCount": 0,
+      "priorClaimsAmount": 0
+    }
+  }
+}
