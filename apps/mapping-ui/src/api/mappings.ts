@@ -131,6 +131,46 @@ export async function createMapping(data: Partial<Mapping>): Promise<Mapping> {
   return response.data;
 }
 
+// New API for creating mapping with field mappings
+export async function createMappingWithFields(data: {
+  name: string;
+  sourceSystem: string;
+  targetSystem: string;
+  productLine: string;
+  version?: string;
+  description?: string;
+  creationMethod?: 'manual' | 'excel' | 'ai' | 'text';
+  sourceReference?: string;
+  sessionId?: string;
+  fieldMappings?: Array<{
+    sourcePath: string;
+    targetPath: string;
+    transformationType?: string;
+    isRequired?: boolean;
+    defaultValue?: string;
+    transformationConfig?: any;
+    validationRules?: any;
+    description?: string;
+    confidence?: number;
+    reasoning?: string;
+  }>;
+}): Promise<{ success: boolean; message: string; data: Mapping }> {
+  const response = await fetch('http://localhost:3000/api/v1/mappings', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create mapping');
+  }
+
+  return response.json();
+}
+
 export async function updateMapping(id: string, data: Partial<Mapping>): Promise<Mapping> {
   const response = await api.put(`/mappings/${id}`, data);
   return response.data;

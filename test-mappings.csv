@@ -1,0 +1,5 @@
+Source Field Path,Target Field,Transformation Type,Business Rule,Sample Value
+quoteNumber,policy.id,direct,,Q-2026-001
+insured.name,insured.name,direct,,Acme Corp
+insured.state,insured.address.state,direct,,CA
+classification.code,ratingFactors.businessType,lookup,state-class-mapping,91580

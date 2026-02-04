@@ -7,6 +7,7 @@ import { AIController } from './controllers/ai.controller';
 import { OrchestrationService } from './services/orchestration.service';
 import { AIService } from './services/ai.service';
 import { RulesModule } from './modules/rules/rules.module';
+import { AIFeaturesModule } from './modules/ai-features.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RulesModule } from './modules/rules/rules.module';
       inject: [ConfigService],
     }),
     RulesModule,
+    AIFeaturesModule,
   ],
   controllers: [RatingController, HealthController, AIController],
   providers: [OrchestrationService, AIService],
