@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Upload, FileText, Sparkles, AlignLeft } from 'lucide-react';
+import { ArrowLeft, Save, Upload, FileText, Sparkles, Link } from 'lucide-react';
 import FileUploader from '../components/FileUploader';
 import MappingPreviewModal from '../components/MappingPreviewModal';
 import { parseExcelFile, generateAISuggestions, parseTextRequirements } from '../api/ai-mappings';
@@ -8,7 +8,7 @@ import { listSchemas } from '../api/schemas';
 import { createMappingWithFields } from '../api/mappings';
 import { getSessionId } from '../utils/session';
 
-type CreationMethod = 'manual' | 'excel' | 'ai' | 'text';
+type CreationMethod = 'manual' | 'excel' | 'ai' | 'text' | 'jira';
 
 interface FormData {
   name: string;
@@ -56,6 +56,28 @@ export default function NewMappingEnhanced() {
   };
 
   const handleGenerateSuggestions = async () => {
+    // Validate required fields for all methods
+    if (!formData.name) {
+      alert('Please enter a Mapping Name');
+      return;
+    }
+
+    if (!formData.sourceSystem) {
+      alert('Please select a Source System');
+      return;
+    }
+
+    if (!formData.targetSystem) {
+      alert('Please select a Target System');
+      return;
+    }
+
+    if (!formData.productLine) {
+      alert('Please enter a Product Line');
+      return;
+    }
+
+    // Method-specific validations
     if (formData.creationMethod === 'excel' && !uploadedFile) {
       alert('Please upload an Excel/CSV file');
       return;
@@ -139,6 +161,21 @@ export default function NewMappingEnhanced() {
         reasoning: suggestion.reasoning,
       }));
 
+      // Prepare source content based on creation method
+      let sourceContent = '';
+      let sourceReference = '';
+
+      if (formData.creationMethod === 'text') {
+        sourceContent = textRequirements;
+        sourceReference = 'Text Requirements';
+      } else if (formData.creationMethod === 'excel' && uploadedFile) {
+        sourceReference = uploadedFile.name;
+        sourceContent = `Excel file: ${uploadedFile.name} (${(uploadedFile.size / 1024).toFixed(2)} KB)`;
+      } else if (formData.creationMethod === 'ai') {
+        sourceReference = 'AI-Generated from Schemas';
+        sourceContent = `Source: ${formData.sourceSystem}, Target: ${formData.targetSystem}`;
+      }
+
       // Create mapping in database
       const response = await createMappingWithFields({
         name: formData.name,
@@ -147,7 +184,8 @@ export default function NewMappingEnhanced() {
         productLine: formData.productLine,
         version: formData.version,
         creationMethod: formData.creationMethod,
-        sourceReference: formData.creationMethod === 'text' ? textRequirements : uploadedFile?.name,
+        sourceReference,
+        sourceContent,
         sessionId: getSessionId(),
         fieldMappings,
       });
@@ -186,6 +224,8 @@ export default function NewMappingEnhanced() {
         productLine: formData.productLine,
         version: formData.version,
         creationMethod: 'manual',
+        sourceReference: 'Manual Creation',
+        sourceContent: 'Created manually from scratch',
         sessionId: getSessionId(),
         fieldMappings: [], // No field mappings for manual creation
       });
@@ -262,10 +302,10 @@ export default function NewMappingEnhanced() {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <AlignLeft className="h-6 w-6 mb-2 text-gray-700" />
-                <div className="font-medium">Paste Text</div>
+                <Sparkles className="h-6 w-6 mb-2 text-purple-600" />
+                <div className="font-medium">AI-Powered</div>
                 <div className="text-xs text-gray-500 mt-1">
-                  Paste JIRA story or requirements text
+                  Describe requirements in plain text, AI generates mappings
                 </div>
               </button>
 
@@ -289,19 +329,35 @@ export default function NewMappingEnhanced() {
 
               <button
                 type="button"
-                onClick={() =>
-                  setFormData({ ...formData, creationMethod: 'ai' })
-                }
-                className={`p-4 border-2 rounded-lg text-left transition-all ${
-                  formData.creationMethod === 'ai'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                disabled
+                className="p-4 border-2 rounded-lg text-left transition-all border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed relative"
               >
-                <Sparkles className="h-6 w-6 mb-2 text-blue-600" />
-                <div className="font-medium">AI-Powered</div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Auto-generate using schema detection
+                <FileText className="h-6 w-6 mb-2 text-gray-400" />
+                <div className="font-medium text-gray-600 flex items-center gap-2">
+                  AI Schema Mapping
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Coming Soon
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Auto-match fields from pre-loaded system schemas
+                </div>
+              </button>
+
+              <button
+                type="button"
+                disabled
+                className="p-4 border-2 rounded-lg text-left transition-all border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed relative"
+              >
+                <Link className="h-6 w-6 mb-2 text-gray-400" />
+                <div className="font-medium text-gray-600 flex items-center gap-2">
+                  JIRA Story URL
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                    Coming Soon
+                  </span>
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  Import requirements from JIRA story
                 </div>
               </button>
             </div>

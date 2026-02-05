@@ -134,6 +134,49 @@ export class MappingsController {
     };
   }
 
+  @Post(':id/test')
+  @ApiOperation({ summary: 'Test mapping transformation' })
+  @ApiResponse({
+    status: 200,
+    description: 'Mapping tested successfully',
+  })
+  async testMapping(
+    @Param('id') mappingId: string,
+    @Body() body: { data: any },
+  ) {
+    this.logger.log(`Testing mapping: ${mappingId}`);
+    const result = await this.mappingService.testMapping(mappingId, body.data);
+
+    return {
+      success: true,
+      message: 'Mapping executed successfully',
+      data: result,
+    };
+  }
+
+  @Put('fields/:fieldId')
+  @ApiOperation({ summary: 'Update field mapping' })
+  @ApiResponse({
+    status: 200,
+    description: 'Field mapping updated successfully',
+  })
+  async updateFieldMapping(
+    @Param('fieldId') fieldId: string,
+    @Body() fieldDto: Partial<FieldMappingDto>,
+  ) {
+    this.logger.log(`Updating field mapping: ${fieldId}`);
+    const fieldMapping = await this.mappingService.updateFieldMapping(
+      fieldId,
+      fieldDto,
+    );
+
+    return {
+      success: true,
+      message: 'Field mapping updated successfully',
+      data: fieldMapping,
+    };
+  }
+
   @Delete('fields/:fieldId')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete field mapping' })

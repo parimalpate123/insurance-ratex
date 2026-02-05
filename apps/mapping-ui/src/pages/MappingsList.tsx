@@ -1,13 +1,53 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Plus, Edit, Trash2, Copy, MapPin } from 'lucide-react';
-import { getMappings } from '@/api/mappings';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Plus, Edit, Trash2, Copy, MapPin, CheckCircle, XCircle, X } from 'lucide-react';
+import { getMappings, deleteMapping } from '@/api/mappings';
+import { useState } from 'react';
 
 export default function MappingsList() {
+  const queryClient = useQueryClient();
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
   const { data: mappings, isLoading } = useQuery({
     queryKey: ['mappings'],
     queryFn: getMappings,
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return deleteMapping(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mappings'] });
+      setDeleteConfirm(null);
+      setNotification({
+        type: 'success',
+        message: 'Mapping deleted successfully!',
+      });
+      setTimeout(() => setNotification(null), 3000);
+    },
+    onError: (error: any) => {
+      setNotification({
+        type: 'error',
+        message: error.message || 'Failed to delete mapping. Please try again.',
+      });
+      setTimeout(() => setNotification(null), 5000);
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteConfirm) {
+      deleteMutation.mutate(deleteConfirm);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -19,6 +59,67 @@ export default function MappingsList() {
 
   return (
     <div>
+      {/* Notification Toast */}
+      {notification && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div
+            className={`rounded-lg shadow-lg p-4 flex items-center space-x-3 ${
+              notification.type === 'success'
+                ? 'bg-green-50 border border-green-200'
+                : 'bg-red-50 border border-red-200'
+            }`}
+          >
+            {notification.type === 'success' ? (
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            ) : (
+              <XCircle className="h-5 w-5 text-red-600" />
+            )}
+            <p
+              className={`text-sm font-medium ${
+                notification.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}
+            >
+              {notification.message}
+            </p>
+            <button
+              onClick={() => setNotification(null)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Delete Mapping
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Are you sure you want to delete this mapping? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteMutation.isPending}
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Field Mappings</h2>
@@ -78,9 +179,16 @@ export default function MappingsList() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 truncate">
-                        {mapping.name || mapping.id}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          {mapping.name || '(Unnamed)'}
+                        </p>
+                        {mapping.mappingNumber && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            {mapping.mappingNumber}
+                          </span>
+                        )}
+                      </div>
                       <div className="ml-2 flex-shrink-0 flex">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -118,6 +226,7 @@ export default function MappingsList() {
                       <Copy className="h-4 w-4" />
                     </button>
                     <button
+                      onClick={() => handleDelete(mapping.id)}
                       className="inline-flex items-center p-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                     >
                       <Trash2 className="h-4 w-4" />

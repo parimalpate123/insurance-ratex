@@ -78,4 +78,10 @@ export class Mapping {
 
   @Column({ name: 'session_id', length: 100, nullable: true })
   sessionId?: string;
+
+  @Column({ name: 'mapping_number', length: 50, unique: true, nullable: true })
+  mappingNumber?: string;
+
+  @Column({ name: 'source_content', type: 'text', nullable: true })
+  sourceContent?: string;
 }

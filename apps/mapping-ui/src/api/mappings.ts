@@ -17,6 +17,10 @@ export interface Mapping {
   status: 'active' | 'draft' | 'archived';
   fieldCount: number;
   fields: FieldMapping[];
+  mappingNumber?: string;
+  sourceContent?: string;
+  sourceReference?: string;
+  creationMethod?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -34,95 +38,65 @@ export interface FieldMapping {
 }
 
 export async function getMappings(): Promise<Mapping[]> {
-  // Mock data for now - will be replaced with real API
-  return [
-    {
-      id: 'guidewire-to-cdm-gl',
-      name: 'Guidewire to CDM (General Liability)',
-      sourceSystem: 'guidewire',
-      targetSystem: 'cdm',
-      productLine: 'general-liability',
-      version: '1.2.0',
-      status: 'active',
-      fieldCount: 45,
-      fields: [],
-    },
-    {
-      id: 'cdm-to-earnix-gl',
-      name: 'CDM to Earnix (General Liability)',
-      sourceSystem: 'cdm',
-      targetSystem: 'earnix',
-      productLine: 'general-liability',
-      version: '1.0.0',
-      status: 'active',
-      fieldCount: 38,
-      fields: [],
-    },
-    {
-      id: 'guidewire-to-cdm-property',
-      name: 'Guidewire to CDM (Property)',
-      sourceSystem: 'guidewire',
-      targetSystem: 'cdm',
-      productLine: 'property',
-      version: '1.0.0',
-      status: 'draft',
-      fieldCount: 52,
-      fields: [],
-    },
-  ];
+  const response = await fetch('http://localhost:3000/api/v1/mappings');
+  if (!response.ok) {
+    throw new Error('Failed to fetch mappings');
+  }
+  const result = await response.json();
+
+  // Transform backend response to frontend format
+  return (result.data || []).map((mapping: any) => ({
+    id: mapping.id,
+    name: mapping.name || '(Unnamed)',
+    sourceSystem: mapping.sourceSystem || '',
+    targetSystem: mapping.targetSystem || '',
+    productLine: mapping.productLine || '',
+    version: mapping.version || '1.0.0',
+    status: mapping.status || 'draft',
+    fieldCount: 0, // We don't have field count in list view
+    fields: [], // Fields not included in list view
+    mappingNumber: mapping.mappingNumber,
+    creationMethod: mapping.creationMethod,
+    createdAt: mapping.createdAt,
+    updatedAt: mapping.updatedAt,
+  }));
 }
 
 export async function getMapping(id: string): Promise<Mapping> {
-  // Mock data
+  const response = await fetch(`http://localhost:3000/api/v1/mappings/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch mapping');
+  }
+  const result = await response.json();
+
+  // Transform backend response to frontend format
+  const mapping = result.data;
   return {
-    id,
-    name: 'Guidewire to CDM (General Liability)',
-    sourceSystem: 'guidewire',
-    targetSystem: 'cdm',
-    productLine: 'general-liability',
-    version: '1.2.0',
-    status: 'active',
-    fieldCount: 45,
-    fields: [
-      {
-        id: 'field-1',
-        source: '$.Quote.QuoteNumber',
-        target: 'policyId',
-        type: 'direct',
-        required: true,
-        description: 'Quote number to policy ID',
-      },
-      {
-        id: 'field-2',
-        source: '$.Quote.AccountHolder.AccountHolderName',
-        target: 'insured.name',
-        type: 'direct',
-        required: true,
-        description: 'Account holder name',
-      },
-      {
-        id: 'field-3',
-        source: '$.Quote.AccountHolder.PrimaryAddress.State',
-        target: 'insured.state',
-        type: 'lookup',
-        required: true,
-        transformation: {
-          lookupTable: 'state-codes',
-        },
-        description: 'State code lookup',
-      },
-      {
-        id: 'field-4',
-        source: '$.Quote.Effective',
-        target: 'effectiveDate',
-        type: 'expression',
-        required: true,
-        transformation: {
-          expression: 'new Date(value).toISOString().split("T")[0]',
-        },
-        description: 'Format effective date',
-      },
-    ],
+    id: mapping.id,
+    name: mapping.name,
+    sourceSystem: mapping.sourceSystem,
+    targetSystem: mapping.targetSystem,
+    productLine: mapping.productLine,
+    version: mapping.version,
+    status: mapping.status,
+    fieldCount: mapping.fieldMappings?.length || 0,
+    fields: (mapping.fieldMappings || []).map((fm: any) => ({
+      id: fm.id,
+      source: fm.sourcePath,
+      target: fm.targetPath,
+      type: fm.transformationType,
+      required: fm.isRequired,
+      defaultValue: fm.defaultValue,
+      transformation: fm.transformationConfig,
+      validation: fm.validationRules,
+      description: fm.description,
+    })),
+    mappingNumber: mapping.mappingNumber,
+    sourceContent: mapping.sourceContent,
+    sourceReference: mapping.sourceReference,
+    creationMethod: mapping.creationMethod,
+    createdAt: mapping.createdAt,
+    updatedAt: mapping.updatedAt,
   };
 }
 
@@ -139,8 +113,9 @@ export async function createMappingWithFields(data: {
   productLine: string;
   version?: string;
   description?: string;
-  creationMethod?: 'manual' | 'excel' | 'ai' | 'text';
+  creationMethod?: 'manual' | 'excel' | 'ai' | 'text' | 'jira';
   sourceReference?: string;
+  sourceContent?: string;
   sessionId?: string;
   fieldMappings?: Array<{
     sourcePath: string;

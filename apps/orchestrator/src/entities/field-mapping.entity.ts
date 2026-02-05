@@ -1,4 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { FieldCatalog } from './field-catalog.entity';
 
 @Entity('field_mappings')
 export class FieldMapping {
@@ -32,9 +41,38 @@ export class FieldMapping {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  // New metadata fields
+  @Column({ name: 'data_type', length: 50, nullable: true })
+  dataType?: string;
+
+  @Column({ name: 'field_direction', length: 20, default: 'both' })
+  fieldDirection: string;
+
+  @Column({ name: 'field_identifier', length: 255, nullable: true })
+  fieldIdentifier?: string;
+
+  @Column({ name: 'skip_mapping', default: false })
+  skipMapping: boolean;
+
+  @Column({ name: 'skip_behavior', length: 20, default: 'exclude' })
+  skipBehavior: string;
+
+  @Column({ name: 'catalog_field_id', type: 'uuid', nullable: true })
+  catalogFieldId?: string;
+
+  @Column({ name: 'sample_input', type: 'text', nullable: true })
+  sampleInput?: string;
+
+  @Column({ name: 'sample_output', type: 'text', nullable: true })
+  sampleOutput?: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @ManyToOne(() => FieldCatalog, { nullable: true })
+  @JoinColumn({ name: 'catalog_field_id' })
+  catalogField?: FieldCatalog;
 }
