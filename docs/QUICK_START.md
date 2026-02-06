@@ -1,280 +1,303 @@
-# InsurRateX Quick Start Guide
+# InsurRateX - Quick Start Guide
 
-Get up and running with InsurRateX in 15 minutes.
+Get the InsurRateX platform up and running in minutes!
 
 ## Prerequisites
 
-- **Docker & Docker Compose** (for running services)
-- **Node.js 18+** (for local development)
-- **curl or Postman** (for testing APIs)
-- **Git** (for cloning repository)
+- Docker Desktop installed and running
+- Ports available: 3002 (API), 5173 (UI), 5432 (PostgreSQL)
 
-## Quick Start (Docker)
-
-### 1. Clone and Start Services
+## Quick Start (First Time)
 
 ```bash
-# Clone repository
-git clone <repository-url>
-cd rating-poc
+# Make scripts executable (first time only)
+chmod +x start.sh restart-platform.sh test-platform.sh
 
-# Start all services
-docker-compose up --build
-
-# Or start in detached mode
-docker-compose up -d
+# Start the platform
+./start.sh
 ```
 
-This starts:
-- **Guidewire Mock** (port 3001)
-- **Earnix Mock** (port 4001)
-- **Orchestrator** (port 3000)
+This will:
+1. Check if Docker is running
+2. Run database migrations
+3. Start all services (PostgreSQL, Rating API, Admin UI)
+4. Wait for services to be healthy
+5. Display access URLs
 
-### 2. Verify Services
+**Access Points:**
+- **Admin UI**: http://localhost:5173 - Main interface for managing product lines
+- **Rating API**: http://localhost:3002 - Backend API endpoints
+- **API Docs**: http://localhost:3002/api/docs - Swagger documentation
+- **Health Check**: http://localhost:3002/health - API health status
 
+## Restart Services
+
+### Quick Restart
 ```bash
-# Check all services are healthy
-curl http://localhost:3000/health  # Orchestrator
-curl http://localhost:3001/health  # Guidewire
-curl http://localhost:4001/health  # Earnix
+./restart-platform.sh
 ```
 
-### 3. Run Your First Rating
+### Restart with Rebuild (after code changes)
+```bash
+./restart-platform.sh --build
+```
+
+### Clean Restart (remove all data)
+```bash
+./restart-platform.sh --clean
+```
+
+## Test the Platform
+
+Run automated tests to verify everything is working:
 
 ```bash
-curl -X POST http://localhost:3000/api/v1/rating/execute \
+./test-platform.sh
+```
+
+This tests:
+- Backend health check
+- Product lines API
+- Templates API
+- Admin UI accessibility
+- Rating execution
+
+## Manual Testing
+
+### 1. View Dashboard
+```bash
+open http://localhost:5173
+```
+- See GL_EXISTING product line stats
+- View workflow configuration
+- Check integration details
+
+### 2. Test Rating Execution
+```bash
+curl -X POST http://localhost:3002/api/v1/product-lines/GL_EXISTING/execute \
   -H "Content-Type: application/json" \
   -d '{
-    "sourceSystem": "guidewire",
-    "ratingEngine": "earnix",
-    "productLine": "general-liability",
-    "policyData": {
-      "quoteNumber": "Q-QUICKSTART-001",
-      "productCode": "GL",
-      "insured": {
-        "name": "Acme Corp",
-        "businessType": "MFG",
-        "state": "CA",
-        "annualRevenue": 5000000
-      },
-      "classification": {
-        "code": "91580"
-      },
-      "coverages": [{
-        "id": "cov-001",
-        "limit": 2000000,
-        "deductible": 5000
-      }]
+    "quoteNumber": "TEST-001",
+    "productCode": "GL",
+    "insured": {
+      "name": "Test Company",
+      "state": "CA",
+      "annualRevenue": 5000000
     }
-  }' | jq
+  }'
 ```
 
-**Expected Response:**
-```json
-{
-  "success": true,
-  "totalPremium": 15689.94,
-  "premiumBreakdown": {
-    "basePremium": 12500.00,
-    "rulesApplied": ["State Territorial Surcharges", "Experience Modifier"]
-  },
-  "metadata": {
-    "executionTime": 1523,
-    "steps": [...]
-  }
-}
-```
-
-### 4. Explore API Documentation
-
-Open Swagger docs in your browser:
-```
-http://localhost:3000/api/docs
-```
-
-## Run E2E Tests
-
+### 3. Get Product Lines
 ```bash
-# Make test script executable
-chmod +x tests/e2e/complete-rating-flow.test.sh
-
-# Run end-to-end tests
-./tests/e2e/complete-rating-flow.test.sh
+curl http://localhost:3002/api/v1/product-lines
 ```
 
-## Architecture Overview
-
-```
-┌─────────────────┐
-│ Policy System   │ (Guidewire)
-│ Port: 3001      │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────┐      ┌──────────────┐
-│  Orchestrator   │◄────►│ Mapping      │
-│  Port: 3000     │      │ Engine       │
-└────────┬────────┘      └──────────────┘
-         │
-         │               ┌──────────────┐
-         ├──────────────►│ Rules Engine │
-         │               └──────────────┘
-         │
-         ▼
-┌─────────────────┐
-│ Rating Engine   │ (Earnix)
-│ Port: 4001      │
-└─────────────────┘
-```
-
-## Key Concepts
-
-### 1. Canonical Data Model (CDM)
-
-Standardized format for insurance policies. All systems transform to/from CDM:
-- **Base Model** (80%): Common fields across all product lines
-- **Extensions** (20%): Product-specific fields
-- **Versioned**: Each product line has versioned schemas
-
-### 2. Mapping Engine
-
-Transforms data between systems and CDM:
-- **10 transformation types**: direct, lookup, expression, conditional, etc.
-- **JSONPath support**: Access nested fields
-- **Validation**: Built-in field validators
-
-### 3. Rules Engine
-
-Business logic without code:
-- **Lookup Tables**: State surcharges, commission rates
-- **Decision Tables**: Experience modifiers, tiered discounts
-- **Conditional Rules**: Complex if-then logic
-
-### 4. Orchestrator
-
-Coordinates the complete rating flow:
-1. Transform source → CDM
-2. Apply business rules
-3. Transform CDM → rating engine
-4. Calculate premium
-
-## Common Use Cases
-
-### Use Case 1: Rate a GL Policy
-
+### 4. Get Templates
 ```bash
-curl -X POST http://localhost:3000/api/v1/rating/execute \
-  -H "Content-Type: application/json" \
-  -d @examples/gl-policy-request.json
+curl http://localhost:3002/api/v1/product-lines/templates
 ```
 
-### Use Case 2: Direct Guidewire Submission
+## Common Tasks
 
+### View Logs
+
+**All services:**
 ```bash
-curl -X POST http://localhost:3001/pc/rating/submit \
-  -H "Content-Type: application/json" \
-  -d @packages/mocks/guidewire-mock/src/rating/data/sample-gl-policy.json
+docker-compose logs -f
 ```
 
-### Use Case 3: Direct Earnix Rating
-
+**Rating API only:**
 ```bash
-curl -X POST http://localhost:4001/earnix/api/v1/rate \
-  -H "Content-Type: application/json" \
-  -d @packages/mocks/earnix-mock/src/rating/data/sample-rating-request.json
+docker-compose logs -f rating-api
 ```
 
-## Directory Structure
-
-```
-rating-poc/
-├── packages/
-│   ├── cdm/                    # Canonical Data Model
-│   ├── adapter-sdk/            # SDK for building adapters
-│   ├── mapping-engine/         # Data transformation engine
-│   ├── rules-engine/           # Business rules engine
-│   └── mocks/
-│       ├── guidewire-mock/     # Guidewire PolicyCenter mock
-│       └── earnix-mock/        # Earnix Rating Engine mock
-├── apps/
-│   └── orchestrator/           # Orchestration service
-├── tests/
-│   ├── e2e/                    # End-to-end tests
-│   └── integration/            # Integration tests
-└── docs/                       # Documentation
+**Admin UI only:**
+```bash
+docker-compose logs -f admin-ui
 ```
 
-## Next Steps
+### Stop Services
+```bash
+docker-compose down
+```
 
-1. **Explore APIs**: Open http://localhost:3000/api/docs
-2. **Try Different States**: Test rating for CA, TX, NY
-3. **Modify Rules**: Edit rules in `packages/rules-engine/rules/`
-4. **Add Mappings**: Create new mappings in `packages/mapping-engine/mappings/`
-5. **Read Architecture**: See `docs/ARCHITECTURE.md`
+### Check Service Status
+```bash
+docker-compose ps
+```
+
+### Access PostgreSQL
+```bash
+docker-compose exec postgres psql -U insurratex -d insurratex
+```
+
+## User Journey
+
+### Create a New Product Line
+
+1. **Open Admin UI**: http://localhost:5173
+2. Click **"New Product Line"** button
+3. Follow the 5-step wizard:
+   - **Step 1**: Enter product details (code, name, owner)
+   - **Step 2**: Select source system and target rating engine
+   - **Step 3**: Choose template or start from scratch
+   - **Step 4**: Configure workflow steps (enable/disable)
+   - **Step 5**: Review and create
+4. Your new product line is ready!
+
+### Test a Rating
+
+1. **Navigate to Test Rating**: Click "Test Rating" in the navigation
+2. **Select Product Line**: Choose from dropdown (e.g., GL_EXISTING)
+3. **Edit Request**: Use the JSON editor or sample data
+4. **Execute**: Click "Execute Rating" button
+5. **View Results**: See premium, rules applied, execution time
+
+### Browse Product Lines
+
+1. **Navigate to Product Lines**: Click "Product Lines" in navigation
+2. **View All Lines**: See active product lines and templates
+3. **View Details**: Click "View" on any product line
+4. **Edit/Delete**: Use action buttons in detail view
 
 ## Troubleshooting
 
 ### Services Won't Start
 
+**Check Docker is running:**
 ```bash
-# Check Docker is running
-docker --version
-
-# Check ports are available
-lsof -i :3000  # Orchestrator
-lsof -i :3001  # Guidewire
-lsof -i :4001  # Earnix
-
-# View logs
-docker-compose logs orchestrator
-docker-compose logs guidewire-mock
-docker-compose logs earnix-mock
+docker info
 ```
 
-### Rating Request Fails
-
+**Check port conflicts:**
 ```bash
-# Check orchestrator logs
-docker-compose logs -f orchestrator
-
-# Test services individually
-curl http://localhost:3001/health
-curl http://localhost:4001/health
+lsof -i :3002  # Rating API
+lsof -i :5173  # Admin UI
+lsof -i :5432  # PostgreSQL
 ```
 
-### Mapping Not Found
-
-Ensure mapping configurations are loaded. Check:
-- `packages/mapping-engine/mappings/guidewire-to-cdm-gl.json`
-- `packages/mapping-engine/mappings/cdm-to-earnix-gl.json`
-
-## Getting Help
-
-- **Documentation**: See `docs/` directory
-- **Examples**: See `examples/` directory
-- **API Docs**: http://localhost:3000/api/docs
-- **Issues**: Create an issue in the repository
-
-## Clean Up
-
+**View error logs:**
 ```bash
-# Stop services
-docker-compose down
-
-# Remove volumes
-docker-compose down -v
-
-# Remove images
-docker-compose down --rmi all
+docker-compose logs rating-api
 ```
 
-## Production Deployment
+### Database Migration Issues
 
-For production deployment to AWS:
-- See `docs/DEPLOYMENT.md`
-- Review `ARCHITECTURE.md` for scaling considerations
-- Check individual service READMEs for configuration options
+**Reset database:**
+```bash
+./restart-platform.sh --clean
+```
+
+**Run migrations manually:**
+```bash
+docker-compose exec postgres psql -U insurratex -d insurratex < database/migrations/001_initial_schema.sql
+```
+
+### UI Not Loading
+
+**Check if admin-ui is running:**
+```bash
+docker-compose ps admin-ui
+```
+
+**Rebuild admin-ui:**
+```bash
+./restart-platform.sh --build
+```
+
+**Check browser console** for errors (F12 → Console tab)
+
+### API Returning Errors
+
+**Check API health:**
+```bash
+curl http://localhost:3002/health
+```
+
+**View API logs:**
+```bash
+docker-compose logs -f rating-api
+```
+
+**Clear cache:**
+```bash
+curl -X POST http://localhost:3002/api/v1/product-lines/cache/clear
+```
+
+## Environment Variables
+
+Default configuration in `.env`:
+```
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_USER=insurratex
+POSTGRES_PASSWORD=insurratex123
+POSTGRES_DB=insurratex
+API_PORT=3002
+UI_PORT=5173
+```
+
+## Architecture Overview
+
+```
+┌─────────────┐
+│  Admin UI   │  http://localhost:5173
+│  (React)    │
+└──────┬──────┘
+       │ HTTP
+       ▼
+┌─────────────┐
+│ Rating API  │  http://localhost:3002
+│  (NestJS)   │
+└──────┬──────┘
+       │ TypeORM
+       ▼
+┌─────────────┐
+│ PostgreSQL  │  localhost:5432
+│  Database   │
+└─────────────┘
+```
+
+## What's Included
+
+**Backend (Rating API):**
+- Product line configuration management
+- Workflow engine (validate, transform, rules, calculate)
+- Mapping service (9 transformation types)
+- Rules service (15+ operators, 7 action types)
+- REST API with Swagger docs
+
+**Frontend (Admin UI):**
+- Dashboard with product line overview
+- 5-step onboarding wizard
+- Test rating interface
+- Product line CRUD operations
+- Responsive design with Tailwind CSS
+
+**Database:**
+- Product line configurations
+- Workflow definitions
+- Mappings and field mappings
+- Business rules and conditions
+- Seeded with GL_EXISTING sample product line
+
+## Next Steps
+
+1. **Explore the Dashboard**: Get familiar with the UI
+2. **Create a Product Line**: Use the onboarding wizard
+3. **Test Rating Execution**: Try the sample request
+4. **Review API Docs**: http://localhost:3002/api/docs
+5. **Read Full Documentation**: See `PHASE3_COMPLETE.md`
+
+## Support
+
+- View logs: `docker-compose logs -f`
+- Run tests: `./test-platform.sh`
+- Check status: `docker-compose ps`
+- Full docs: `README.md` and `PHASE3_COMPLETE.md`
 
 ---
 
-**Congratulations!** You now have a working InsurRateX platform. Happy rating! 🎉
+**Platform Status**: Phase 3 Complete ✅
+
+**Last Updated**: 2026-02-06

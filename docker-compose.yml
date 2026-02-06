@@ -49,7 +49,54 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # InsurRateX Orchestrator
+  # InsurRateX Admin UI (NEW - Unified admin interface)
+  admin-ui:
+    build:
+      context: ./apps/admin-ui
+      dockerfile: Dockerfile
+    container_name: insurratex-admin-ui
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://rating-api:3002
+    networks:
+      - insurratex-network
+    depends_on:
+      - rating-api
+    restart: unless-stopped
+
+  # InsurRateX Rating API (NEW - Configuration-driven)
+  rating-api:
+    build:
+      context: .
+      dockerfile: ./apps/rating-api/Dockerfile
+    container_name: insurratex-rating-api
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - RATING_API_PORT=3002
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=insurratex
+      - DB_PASSWORD=dev_password_change_in_prod
+      - DB_DATABASE=insurratex
+      - LOG_LEVEL=debug
+    volumes:
+      - ./apps/rating-api/src:/app/src
+    networks:
+      - insurratex-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/api/v1/product-lines"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # InsurRateX Orchestrator (OLD - Legacy POC)
   orchestrator:
     build:
       context: .
