@@ -7,6 +7,9 @@ import { MappingsModule } from './modules/mappings/mappings.module';
 import { RulesModule } from './modules/rules/rules.module';
 import { WorkflowModule } from './modules/workflows/workflow.module';
 import { ExecutionModule } from './modules/execution/execution.module';
+import { DecisionTablesModule } from './modules/decision-tables/decision-tables.module';
+import { LookupTablesModule } from './modules/lookup-tables/lookup-tables.module';
+import { KnowledgeBaseModule } from './modules/knowledge-base/knowledge-base.module';
 import { HealthController } from './shared/health.controller';
 
 @Module({
@@ -25,6 +28,9 @@ import { HealthController } from './shared/health.controller';
     RulesModule,
     WorkflowModule,
     ExecutionModule,
+    DecisionTablesModule,
+    LookupTablesModule,
+    KnowledgeBaseModule,
   ],
   controllers: [HealthController],
   providers: [],

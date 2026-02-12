@@ -21,8 +21,8 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-echo "${BLUE}Step 1: Starting PostgreSQL database${NC}"
-docker-compose up -d postgres
+echo "${BLUE}Step 1: Starting PostgreSQL and MinIO${NC}"
+docker-compose up -d postgres minio
 echo "Waiting for PostgreSQL to be ready..."
 sleep 5
 echo "${GREEN}✓ PostgreSQL started${NC}"
@@ -30,13 +30,23 @@ echo ""
 
 echo "${BLUE}Step 2: Running database migrations${NC}"
 echo "Checking if migrations are needed..."
-docker-compose exec -T postgres psql -U insurratex -d insurratex -c "\d product_line_configs" > /dev/null 2>&1
-if [ $? -ne 0 ]; then
+
+# Migration 005 - product_line_configs
+if docker-compose exec -T postgres psql -U insurratex -d insurratex -c "\d product_line_configs" > /dev/null 2>&1; then
+    echo "${GREEN}✓ Migration 005 already applied${NC}"
+else
     echo "Running migration 005_product_line_configuration.sql..."
     docker-compose exec -T postgres psql -U insurratex -d insurratex < database/migrations/005_product_line_configuration.sql > /dev/null 2>&1
-    echo "${GREEN}✓ Migration completed${NC}"
+    echo "${GREEN}✓ Migration 005 completed${NC}"
+fi
+
+# Migration 006 - KB S3 columns on uploaded_files
+if docker-compose exec -T postgres psql -U insurratex -d insurratex -c "SELECT ai_status FROM uploaded_files LIMIT 1" > /dev/null 2>&1; then
+    echo "${GREEN}✓ Migration 006 already applied${NC}"
 else
-    echo "${GREEN}✓ Migrations already applied${NC}"
+    echo "Running migration 006_kb_s3_columns.sql..."
+    docker-compose exec -T postgres psql -U insurratex -d insurratex < database/migrations/006_kb_s3_columns.sql > /dev/null 2>&1
+    echo "${GREEN}✓ Migration 006 completed${NC}"
 fi
 echo ""
 
@@ -81,6 +91,9 @@ echo "                   Backend API endpoints"
 echo ""
 echo "  ${BLUE}API Docs:${NC}        http://localhost:3002/api/docs"
 echo "                   Swagger documentation"
+echo ""
+echo "  ${BLUE}MinIO Console:${NC}   http://localhost:9001"
+echo "                   Object storage for Knowledge Base (user: insurratex)"
 echo ""
 echo "  ${BLUE}Health Check:${NC}    http://localhost:3002/health"
 echo "                   API health status"

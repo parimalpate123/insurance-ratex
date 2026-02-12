@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { Home, Package, Settings, PlayCircle, Plus } from 'lucide-react';
+import { Home, Package, Settings, PlayCircle, Plus, GitBranch, Table, BookOpen, List, ArrowLeftRight } from 'lucide-react';
 import ProductLineSelector from './ProductLineSelector';
 
 export default function Layout() {
@@ -53,7 +53,7 @@ export default function Layout() {
       {/* Navigation */}
       <nav className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-1 py-3">
+          <div className="flex space-x-1 py-3 flex-wrap">
             <Link to="/" className={navLinkClass('/')}>
               <Home className="h-4 w-4" />
               <span>Dashboard</span>
@@ -61,6 +61,26 @@ export default function Layout() {
             <Link to="/product-lines" className={navLinkClass('/product-lines')}>
               <Package className="h-4 w-4" />
               <span>Product Lines</span>
+            </Link>
+            <Link to="/mappings" className={navLinkClass('/mappings')}>
+              <ArrowLeftRight className="h-4 w-4" />
+              <span>Mappings</span>
+            </Link>
+            <Link to="/rules" className={navLinkClass('/rules')}>
+              <GitBranch className="h-4 w-4" />
+              <span>Rules</span>
+            </Link>
+            <Link to="/decision-tables" className={navLinkClass('/decision-tables')}>
+              <Table className="h-4 w-4" />
+              <span>Decision Tables</span>
+            </Link>
+            <Link to="/lookup-tables" className={navLinkClass('/lookup-tables')}>
+              <List className="h-4 w-4" />
+              <span>Lookup Tables</span>
+            </Link>
+            <Link to="/knowledge-base" className={navLinkClass('/knowledge-base')}>
+              <BookOpen className="h-4 w-4" />
+              <span>Knowledge Base</span>
             </Link>
             <Link to="/test-rating" className={navLinkClass('/test-rating')}>
               <PlayCircle className="h-4 w-4" />

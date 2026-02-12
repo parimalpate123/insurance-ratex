@@ -61,22 +61,56 @@ if [ "$BUILD" = true ]; then
     echo ""
 fi
 
-# Start services
-echo "${BLUE}Step 3: Starting services...${NC}"
-docker-compose up -d postgres rating-api admin-ui
+# Start postgres + minio first
+echo "${BLUE}Step 3: Starting PostgreSQL and MinIO...${NC}"
+docker-compose up -d postgres minio
+echo "Waiting for PostgreSQL..."
+for i in {1..20}; do
+    if docker-compose exec -T postgres pg_isready -U insurratex > /dev/null 2>&1; then
+        echo "${GREEN}✓ PostgreSQL ready${NC}"
+        break
+    fi
+    echo -n "."
+    sleep 1
+done
+echo ""
+
+# Run migrations (use inline if to avoid set -e killing the script on non-zero exit)
+echo "${BLUE}Step 4: Running database migrations...${NC}"
+
+if docker-compose exec -T postgres psql -U insurratex -d insurratex -c "\d product_line_configs" > /dev/null 2>&1; then
+    echo "${GREEN}✓ Migration 005 already applied${NC}"
+else
+    echo "Applying migration 005..."
+    docker-compose exec -T postgres psql -U insurratex -d insurratex < database/migrations/005_product_line_configuration.sql > /dev/null 2>&1
+    echo "${GREEN}✓ Migration 005 applied${NC}"
+fi
+
+if docker-compose exec -T postgres psql -U insurratex -d insurratex -c "SELECT ai_status FROM uploaded_files LIMIT 1" > /dev/null 2>&1; then
+    echo "${GREEN}✓ Migration 006 already applied${NC}"
+else
+    echo "Applying migration 006..."
+    docker-compose exec -T postgres psql -U insurratex -d insurratex < database/migrations/006_kb_s3_columns.sql > /dev/null 2>&1
+    echo "${GREEN}✓ Migration 006 applied${NC}"
+fi
+echo ""
+
+# Start app services
+echo "${BLUE}Step 5: Starting Rating API and Admin UI...${NC}"
+docker-compose up -d rating-api admin-ui
 echo "${GREEN}✓ Services started${NC}"
 echo ""
 
 # Wait for health
-echo "${BLUE}Step 4: Waiting for services to be healthy...${NC}"
+echo "${BLUE}Step 6: Waiting for services to be healthy...${NC}"
 echo "Waiting for rating-api..."
-for i in {1..30}; do
+for i in {1..40}; do
     if curl -s http://localhost:3002/health > /dev/null 2>&1; then
         echo "${GREEN}✓ Rating API is ready${NC}"
         break
     fi
     echo -n "."
-    sleep 1
+    sleep 2
 done
 echo ""
 
@@ -96,10 +130,12 @@ echo "${GREEN}✅ Platform Restarted!${NC}"
 echo "${GREEN}================================${NC}"
 echo ""
 echo "📍 Access Points:"
-echo "  Admin UI:     http://localhost:5173"
-echo "  Rating API:   http://localhost:3002"
-echo "  API Docs:     http://localhost:3002/api/docs"
+echo "  Admin UI:        http://localhost:5173"
+echo "  Rating API:      http://localhost:3002"
+echo "  API Docs:        http://localhost:3002/api/docs"
+echo "  MinIO Console:   http://localhost:9001  (user: insurratex / dev_password_change_in_prod)"
 echo ""
 echo "📊 View Logs:"
-echo "  docker-compose logs -f"
+echo "  docker-compose logs -f rating-api"
+echo "  docker-compose logs -f admin-ui"
 echo ""

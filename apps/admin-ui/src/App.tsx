@@ -7,6 +7,14 @@ import ProductLineDetail from '@/pages/ProductLineDetail';
 import OnboardingWizard from '@/pages/OnboardingWizard';
 import TestRating from '@/pages/TestRating';
 import Settings from '@/pages/Settings';
+import Mappings from '@/pages/Mappings';
+import MappingEditor from '@/pages/MappingEditor';
+import MappingCreate from '@/pages/MappingCreate';
+import Rules from '@/pages/Rules';
+import RuleEditor from '@/pages/RuleEditor';
+import DecisionTables from '@/pages/DecisionTables';
+import LookupTables from '@/pages/LookupTables';
+import KnowledgeBase from '@/pages/KnowledgeBase';
 
 function App() {
   return (
@@ -17,6 +25,15 @@ function App() {
           <Route path="product-lines" element={<ProductLines />} />
           <Route path="product-lines/:code" element={<ProductLineDetail />} />
           <Route path="onboarding" element={<OnboardingWizard />} />
+          <Route path="mappings" element={<Mappings />} />
+          <Route path="mappings/new" element={<MappingCreate />} />
+          <Route path="mappings/:id" element={<MappingEditor />} />
+          <Route path="rules" element={<Rules />} />
+          <Route path="rules/new" element={<RuleEditor />} />
+          <Route path="rules/:id" element={<RuleEditor />} />
+          <Route path="decision-tables" element={<DecisionTables />} />
+          <Route path="lookup-tables" element={<LookupTables />} />
+          <Route path="knowledge-base" element={<KnowledgeBase />} />
           <Route path="test-rating" element={<TestRating />} />
           <Route path="settings" element={<Settings />} />
         </Route>

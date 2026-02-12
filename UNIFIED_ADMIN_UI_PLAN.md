@@ -1041,13 +1041,207 @@ User only needs:
 
 ---
 
+## 🧠 Knowledge Base Module - Feature Checklist
+
+**Document Management:**
+- [ ] Upload documents (PDF, DOCX, XLSX, CSV, TXT)
+- [ ] View all documents in library
+- [ ] Search documents (full-text)
+- [ ] Categorize documents (System Docs, Rating Manuals, etc.)
+- [ ] Tag documents with keywords
+- [ ] View document details and metadata
+- [ ] Edit document name, category, tags
+- [ ] Delete document (with confirmation)
+- [ ] Download original document
+- [ ] Enable / disable document for AI
+
+**AI Processing:**
+- [ ] Text extraction on upload
+- [ ] Document chunking for RAG
+- [ ] Vector embedding generation
+- [ ] Processing status indicator (queued, processing, done, failed)
+- [ ] Reprocess document (when AI model changes)
+- [ ] Show chunk count and quality score
+
+**AI Integration:**
+- [ ] Use KB context in mapping suggestions
+- [ ] Use KB context in rule generation
+- [ ] Show source citations for AI suggestions
+- [ ] Show which KB doc informed each suggestion
+- [ ] Confidence scores based on KB match quality
+- [ ] Allow user to accept/reject KB-informed suggestions
+
+**Analytics:**
+- [ ] Total documents count
+- [ ] Total storage used
+- [ ] Documents per category
+- [ ] AI usage count per document
+- [ ] Last updated timestamps
+- [ ] Most referenced documents
+
+---
+
+## 🗺️ Navigation Design
+
+**Updated main navigation:**
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  InsurRateX Admin   [Product Line: GL_EXISTING ▼]  [+ New PL]   │
+├──────────────────────────────────────────────────────────────────┤
+│  Dashboard | Product Lines | Mappings | Rules | KB | Test | ⚙️  │
+│                              ↑          ↑       ↑              │
+│                             NEW        NEW    NEW(KB)           │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Mappings dropdown:**
+```
+Mappings ▼
+├── Field Mappings
+├── Field Catalog
+└── AI Suggestions
+```
+
+**Rules dropdown:**
+```
+Rules ▼
+├── Conditional Rules
+├── Decision Tables
+└── Lookup Tables
+```
+
+**Knowledge Base:**
+```
+KB ▼
+├── Document Library
+├── Upload Document
+└── Search KB
+```
+
+---
+
+## 📐 Page Hierarchy & Routes
+
+```
+/dashboard                    - Main dashboard
+/product-lines                - Product lines list
+/product-lines/:code          - Product line detail
+
+/mappings                     - Mappings list (filtered by PL)
+/mappings/new                 - Create new mapping
+/mappings/:id                 - Edit mapping + field mappings
+/field-catalog                - Browse source/target fields
+
+/rules                        - Conditional rules list
+/rules/new                    - Create new rule
+/rules/:id                    - Edit rule
+
+/decision-tables              - Decision tables list
+/decision-tables/new          - Create new table
+/decision-tables/:id          - Edit table
+
+/lookup-tables                - Lookup tables list
+/lookup-tables/new            - Create new table
+/lookup-tables/:id            - Edit table
+
+/knowledge-base               - KB dashboard
+/knowledge-base/upload        - Upload document
+/knowledge-base/:id           - View document
+
+/test-rating                  - Test rating execution
+/settings                     - Platform settings
+```
+
+---
+
+## 🔌 Backend API Endpoints Required
+
+**Mappings (already exist in DB, need API verification):**
+```
+GET    /api/v1/mappings?productLine=GL_EXISTING
+POST   /api/v1/mappings
+GET    /api/v1/mappings/:id
+PUT    /api/v1/mappings/:id
+DELETE /api/v1/mappings/:id
+POST   /api/v1/mappings/:id/field-mappings
+DELETE /api/v1/mappings/:id/field-mappings/:fieldId
+```
+
+**Rules (already exist in DB, need API verification):**
+```
+GET    /api/v1/rules?productLine=GL_EXISTING
+POST   /api/v1/rules
+GET    /api/v1/rules/:id
+PUT    /api/v1/rules/:id
+DELETE /api/v1/rules/:id
+```
+
+**Decision Tables (need to verify DB + API):**
+```
+GET    /api/v1/decision-tables?productLine=GL_EXISTING
+POST   /api/v1/decision-tables
+GET    /api/v1/decision-tables/:id
+PUT    /api/v1/decision-tables/:id
+DELETE /api/v1/decision-tables/:id
+```
+
+**Lookup Tables (need to verify DB + API):**
+```
+GET    /api/v1/lookup-tables?productLine=GL_EXISTING
+POST   /api/v1/lookup-tables
+GET    /api/v1/lookup-tables/:id
+PUT    /api/v1/lookup-tables/:id
+DELETE /api/v1/lookup-tables/:id
+POST   /api/v1/lookup-tables/:id/import-csv
+GET    /api/v1/lookup-tables/:id/export-csv
+```
+
+**Knowledge Base (new - needs DB + API):**
+```
+GET    /api/v1/knowledge-base
+POST   /api/v1/knowledge-base/upload   (multipart/form-data)
+GET    /api/v1/knowledge-base/:id
+PUT    /api/v1/knowledge-base/:id
+DELETE /api/v1/knowledge-base/:id
+POST   /api/v1/knowledge-base/:id/reprocess
+GET    /api/v1/knowledge-base/search?q=...
+```
+
+---
+
+## 🗄️ Database Status - VERIFIED
+
+**Already exists (18 tables found!):**
+- ✅ `mappings` - Mapping configurations
+- ✅ `field_mappings` - Individual field transformations
+- ✅ `field_catalog` - Source/target field definitions
+- ✅ `conditional_rules` - Business rules
+- ✅ `rule_conditions` - Rule IF conditions
+- ✅ `rule_actions` - Rule THEN actions
+- ✅ `decision_tables` - Decision table definitions
+- ✅ `decision_table_rows` - Decision table row data
+- ✅ `lookup_tables` - Lookup table definitions
+- ✅ `lookup_entries` - Lookup table data rows
+- ✅ `ai_suggestions` - AI suggestion history
+- ✅ `uploaded_files` - File upload metadata (can use for KB)
+- ✅ `schemas` - Schema definitions
+- ✅ `data_types` - Data type catalog
+
+**New tables needed (KB only):**
+- 🆕 `kb_chunks` - Document text chunks for RAG search
+- 🆕 `kb_embeddings` - Vector embeddings for semantic search
+
+**Key Insight:** The database is already ~90% ready!
+This means we can focus almost entirely on the UI layer.
+Very little backend work needed.
+
+---
+
 ## 🤔 Open Questions
 
-1. **Should we include decision tables in MVP?**
-   - Recommendation: No, defer to future release
-
-2. **Should mapping editor be modal or full page?**
+1. **Should mapping editor be modal or full page?**
    - Recommendation: Full page (better for complex forms)
+   - ✋ Your decision needed
 
 3. **How to handle product line switching while editing?**
    - Recommendation: Prompt to save/discard changes

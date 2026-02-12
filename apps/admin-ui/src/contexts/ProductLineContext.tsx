@@ -4,6 +4,7 @@ import { productLinesApi, ProductLineConfig } from '@/api/product-lines';
 
 interface ProductLineContextType {
   currentProductLine: string | null;
+  selectedProductLine: ProductLineConfig | null;
   setCurrentProductLine: (code: string) => void;
   productLines: ProductLineConfig[];
   isLoading: boolean;
@@ -44,10 +45,13 @@ export function ProductLineProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('currentProductLine', code);
   };
 
+  const selectedProductLine = productLines.find((pl) => pl.code === currentProductLine) ?? null;
+
   return (
     <ProductLineContext.Provider
       value={{
         currentProductLine,
+        selectedProductLine,
         setCurrentProductLine,
         productLines,
         isLoading,
