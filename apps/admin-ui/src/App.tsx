@@ -15,6 +15,9 @@ import RuleEditor from '@/pages/RuleEditor';
 import DecisionTables from '@/pages/DecisionTables';
 import LookupTables from '@/pages/LookupTables';
 import KnowledgeBase from '@/pages/KnowledgeBase';
+import AiPrompts from '@/pages/AiPrompts';
+import Systems from '@/pages/Systems';
+import Pipelines from '@/pages/Pipelines';
 
 function App() {
   return (
@@ -34,6 +37,9 @@ function App() {
           <Route path="decision-tables" element={<DecisionTables />} />
           <Route path="lookup-tables" element={<LookupTables />} />
           <Route path="knowledge-base" element={<KnowledgeBase />} />
+          <Route path="ai-prompts" element={<AiPrompts />} />
+          <Route path="systems" element={<Systems />} />
+          <Route path="pipelines" element={<Pipelines />} />
           <Route path="test-rating" element={<TestRating />} />
           <Route path="settings" element={<Settings />} />
         </Route>

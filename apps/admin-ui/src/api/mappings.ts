@@ -69,6 +69,9 @@ export interface Mapping {
   sessionId?: string;
   createdBy?: string;
   updatedBy?: string;
+  pipelineId?: string;
+  execOrder?: number;
+  direction?: 'request' | 'response';
   createdAt: string;
   updatedAt: string;
   fieldMappings?: FieldMapping[];

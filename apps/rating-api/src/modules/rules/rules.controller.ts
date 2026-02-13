@@ -16,6 +16,7 @@ import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RulesService } from './rules.service';
+import { AiPromptsService } from '../ai-prompts/ai-prompts.service';
 import { ConditionalRule } from '../../entities/conditional-rule.entity';
 import { RuleCondition } from '../../entities/rule-condition.entity';
 import { RuleAction } from '../../entities/rule-action.entity';
@@ -25,6 +26,7 @@ import { RuleAction } from '../../entities/rule-action.entity';
 export class RulesController {
   constructor(
     private readonly rulesService: RulesService,
+    private readonly aiPromptsService: AiPromptsService,
     @InjectRepository(ConditionalRule)
     private readonly ruleRepo: Repository<ConditionalRule>,
     @InjectRepository(RuleCondition)
@@ -179,11 +181,17 @@ export class RulesController {
           credentials: { accessKeyId: awsKey, secretAccessKey: awsSecret },
         });
 
-        const prompt = `You are an expert in insurance business rules and rating systems.
+        const prompt = await this.aiPromptsService.buildPrompt(
+          'rule-generate',
+          {
+            productLine: plCode ?? 'general',
+            description: desc,
+          },
+          `You are an expert in insurance business rules and rating systems.
 Convert this plain-English description into a structured insurance rule JSON.
 
-Product Line Code: ${plCode}
-Description: "${desc}"
+Product Line Code: {{productLine}}
+Description: "{{description}}"
 
 Respond ONLY with valid JSON using this exact structure:
 {
@@ -205,7 +213,8 @@ Rules:
 - value for surcharge/discount is a decimal (0.20 = 20%)
 - for "in" operator, value is a comma-separated list: "CA,NY,NJ"
 - multiple conditions are all ANDed together
-- output only JSON, no explanation`;
+- output only JSON, no explanation`,
+        );
 
         const payload = {
           anthropic_version: 'bedrock-2023-05-31',

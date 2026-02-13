@@ -3,29 +3,199 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft, Save, Plus, Trash2, ChevronRight,
-  Sparkles, CheckCircle, XCircle, X, Pencil, Check,
+  Sparkles, CheckCircle, XCircle, X, Pencil, Check, Play,
 } from 'lucide-react';
-import { mappingsApi, Mapping, FieldMapping, TransformationType, CreateFieldMappingDto } from '@/api/mappings';
+import { mappingsApi, FieldMapping, TransformationType, CreateFieldMappingDto } from '@/api/mappings';
 import { apiClient } from '@/api/client';
 import { useProductLine } from '@/contexts/ProductLineContext';
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
-const TRANSFORMATION_TYPES: { value: TransformationType; label: string }[] = [
-  { value: 'direct', label: 'Direct' },
-  { value: 'expression', label: 'Expression' },
-  { value: 'lookup', label: 'Lookup Table' },
-  { value: 'conditional', label: 'Conditional' },
-  { value: 'static', label: 'Static Value' },
-  { value: 'concat', label: 'Concatenation' },
-  { value: 'split', label: 'Split' },
-  { value: 'uppercase', label: 'Uppercase' },
-  { value: 'lowercase', label: 'Lowercase' },
-  { value: 'trim', label: 'Trim' },
-  { value: 'number', label: 'To Number' },
-  { value: 'date', label: 'Date Format' },
-  { value: 'custom', label: 'Custom Function' },
+const TRANSFORMATION_TYPES: { value: TransformationType; label: string; description: string }[] = [
+  { value: 'direct',      label: 'Direct',          description: 'Copy value as-is' },
+  { value: 'expression',  label: 'Expression',      description: 'Arithmetic: value / 1000' },
+  { value: 'conditional', label: 'Conditional',     description: 'if/then/else logic' },
+  { value: 'lookup',      label: 'Lookup Table',    description: 'Look up value from a table' },
+  { value: 'concat',      label: 'Concatenation',   description: 'Join multiple fields' },
+  { value: 'split',       label: 'Split',           description: 'Extract part of a string' },
+  { value: 'static',      label: 'Static Value',    description: 'Always output a fixed value' },
+  { value: 'uppercase',   label: 'Uppercase',       description: 'Convert to UPPER CASE' },
+  { value: 'lowercase',   label: 'Lowercase',       description: 'Convert to lower case' },
+  { value: 'trim',        label: 'Trim',            description: 'Remove leading/trailing spaces' },
+  { value: 'number',      label: 'To Number',       description: 'Parse string to number' },
+  { value: 'date',        label: 'Date Format',     description: 'Reformat a date value' },
+  { value: 'multiply',    label: 'Multiply',        description: 'Multiply by a factor' },
+  { value: 'divide',      label: 'Divide',          description: 'Divide by a divisor' },
+  { value: 'round',       label: 'Round',           description: 'Round to N decimal places' },
+  { value: 'per_unit',    label: 'Per Unit',        description: 'Divide by unit size (e.g. /100 for WC)' },
+  { value: 'custom',      label: 'Custom Expression', description: 'Advanced: full expression string' },
 ];
+
+// ── Transformation Config UI ───────────────────────────────────────────────
+// Renders type-specific config fields below the transformation type selector.
+
+function TransformationConfigUI({
+  type,
+  config,
+  onChange,
+}: {
+  type: string;
+  config: Record<string, any>;
+  onChange: (cfg: Record<string, any>) => void;
+}) {
+  const set = (key: string, value: any) => onChange({ ...config, [key]: value });
+
+  const hint = (text: string) => (
+    <p className="text-xs text-gray-400 mt-0.5">{text}</p>
+  );
+
+  switch (type) {
+    case 'direct':
+    case 'uppercase':
+    case 'lowercase':
+    case 'trim':
+    case 'number':
+    case 'string':
+    case 'boolean':
+      return null; // no extra config needed
+
+    case 'expression':
+    case 'custom':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Expression</label>
+          <input className={inputCls + ' font-mono'} value={config.expression ?? ''} onChange={(e) => set('expression', e.target.value)} placeholder="value / 1000" />
+          {hint('Use "value" for the source field. Arithmetic operators: + - * / % ( )')}
+        </div>
+      );
+
+    case 'conditional':
+      return (
+        <div className="space-y-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Condition</label>
+            <input className={inputCls + ' font-mono'} value={config.condition ?? ''} onChange={(e) => set('condition', e.target.value)} placeholder='value > 5000000' />
+            {hint('Use "value" for source. Operators: > >= < <= == !=')}
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">If True</label>
+              <input className={inputCls} value={config.trueValue ?? ''} onChange={(e) => set('trueValue', e.target.value)} placeholder="large" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">If False</label>
+              <input className={inputCls} value={config.falseValue ?? ''} onChange={(e) => set('falseValue', e.target.value)} placeholder="small" />
+            </div>
+          </div>
+        </div>
+      );
+
+    case 'lookup':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Lookup Table Name</label>
+          <input className={inputCls} value={config.tableKey ?? ''} onChange={(e) => set('tableKey', e.target.value)} placeholder="gl-territory-factors" />
+          {hint('The value of this field is used as the lookup key. Enter the exact Lookup Table name.')}
+          <div className="mt-2">
+            <label className="block text-xs font-medium text-gray-700 mb-1">If Not Found</label>
+            <input className={inputCls} value={config.notFoundValue ?? ''} onChange={(e) => set('notFoundValue', e.target.value)} placeholder="Leave blank to use source value" />
+          </div>
+        </div>
+      );
+
+    case 'static':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Static Value</label>
+          <input className={inputCls} value={config.value ?? ''} onChange={(e) => set('value', e.target.value)} placeholder="e.g. GL" />
+          {hint('This value is always output regardless of the source field.')}
+        </div>
+      );
+
+    case 'concat':
+      return (
+        <div className="space-y-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Fields to Join (one per line, dot-notation)</label>
+            <textarea className={inputCls + ' font-mono'} rows={3}
+              value={(config.fields ?? []).join('\n')}
+              onChange={(e) => set('fields', e.target.value.split('\n').map((s: string) => s.trim()).filter(Boolean))}
+              placeholder={'insured.firstName\ninsured.lastName'}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Separator</label>
+            <input className={inputCls} value={config.separator ?? ' '} onChange={(e) => set('separator', e.target.value)} placeholder=" " />
+          </div>
+        </div>
+      );
+
+    case 'split':
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Delimiter</label>
+            <input className={inputCls + ' font-mono'} value={config.delimiter ?? ','} onChange={(e) => set('delimiter', e.target.value)} placeholder="," />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Index (0-based)</label>
+            <input type="number" className={inputCls} value={config.index ?? 0} onChange={(e) => set('index', Number(e.target.value))} min={0} />
+          </div>
+        </div>
+      );
+
+    case 'date':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Output Format</label>
+          <select className={selectCls} value={config.outputFormat ?? 'YYYY-MM-DD'} onChange={(e) => set('outputFormat', e.target.value)}>
+            <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+            <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+            <option value="DD/MM/YYYY">DD/MM/YYYY (EU)</option>
+            <option value="timestamp">ISO Timestamp</option>
+            <option value="epoch">Unix Epoch (ms)</option>
+          </select>
+        </div>
+      );
+
+    case 'multiply':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Factor</label>
+          <input type="number" className={inputCls} value={config.factor ?? ''} onChange={(e) => set('factor', Number(e.target.value))} placeholder="1.15" step="0.01" />
+          {hint('Result = source value × factor. Common use: apply a rate modifier.')}
+        </div>
+      );
+
+    case 'divide':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Divisor</label>
+          <input type="number" className={inputCls} value={config.divisor ?? ''} onChange={(e) => set('divisor', Number(e.target.value))} placeholder="1000" />
+        </div>
+      );
+
+    case 'round':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Decimal Places</label>
+          <input type="number" className={inputCls} value={config.decimals ?? 2} onChange={(e) => set('decimals', Number(e.target.value))} min={0} max={10} />
+        </div>
+      );
+
+    case 'per_unit':
+      return (
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Unit Size</label>
+          <input type="number" className={inputCls} value={config.unitSize ?? 100} onChange={(e) => set('unitSize', Number(e.target.value))} placeholder="100" />
+          {hint('Result = source value ÷ unit size. e.g. WC payroll per $100.')}
+        </div>
+      );
+
+    default:
+      return null;
+  }
+}
 
 const inputCls = 'block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
 const selectCls = 'block w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500';
@@ -57,7 +227,14 @@ function AddFieldModal({
   onClose: () => void;
   onAdded: () => void;
 }) {
-  const [form, setForm] = useState<CreateFieldMappingDto>({
+  const [form, setForm] = useState<CreateFieldMappingDto & {
+    fieldDirection: 'both' | 'input' | 'output';
+    fieldIdentifier: string;
+    skipMapping: boolean;
+    skipBehavior: 'exclude' | 'use_default';
+    sampleInput: string;
+    sampleOutput: string;
+  }>({
     sourcePath: '',
     targetPath: '',
     transformationType: 'direct',
@@ -65,6 +242,12 @@ function AddFieldModal({
     defaultValue: '',
     description: '',
     dataType: 'string',
+    fieldDirection: 'both',
+    fieldIdentifier: '',
+    skipMapping: false,
+    skipBehavior: 'exclude',
+    sampleInput: '',
+    sampleOutput: '',
   });
   const [error, setError] = useState('');
 
@@ -76,15 +259,15 @@ function AddFieldModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-lg font-semibold text-gray-900">Add Field Mapping</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Source Path *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Source Path (JSONPath) *</label>
               <input type="text" value={form.sourcePath}
                 onChange={(e) => setForm({ ...form, sourcePath: e.target.value })}
                 className={`${inputCls} font-mono`} placeholder="$.Quote.Premium" />
@@ -115,15 +298,71 @@ function AddFieldModal({
               </select>
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Field Direction</label>
+              <select value={form.fieldDirection}
+                onChange={(e) => setForm({ ...form, fieldDirection: e.target.value as any })}
+                className={selectCls}>
+                <option value="both">Both (Bidirectional)</option>
+                <option value="input">Input Only</option>
+                <option value="output">Output Only</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Field Identifier</label>
+              <input type="text" value={form.fieldIdentifier}
+                onChange={(e) => setForm({ ...form, fieldIdentifier: e.target.value })}
+                className={inputCls} placeholder="policy.number" />
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Default Value</label>
             <input type="text" value={form.defaultValue ?? ''}
               onChange={(e) => setForm({ ...form, defaultValue: e.target.value })}
-              className={inputCls} placeholder="Optional fallback value" />
+              className={inputCls} placeholder="Value when source field is missing" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sample Input</label>
+              <input type="text" value={form.sampleInput}
+                onChange={(e) => setForm({ ...form, sampleInput: e.target.value })}
+                className={inputCls} placeholder="Example source value" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sample Output</label>
+              <input type="text" value={form.sampleOutput}
+                onChange={(e) => setForm({ ...form, sampleOutput: e.target.value })}
+                className={inputCls} placeholder="Expected target value" />
+            </div>
+          </div>
+          <div className="border border-gray-200 rounded-lg p-3 space-y-2">
+            <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+              <input type="checkbox" checked={form.skipMapping}
+                onChange={(e) => setForm({ ...form, skipMapping: e.target.checked })}
+                className="rounded border-gray-300" />
+              <span>Skip Mapping</span>
+            </label>
+            {form.skipMapping && (
+              <div className="ml-6 space-y-1.5">
+                <label className="flex items-center space-x-2 text-sm text-gray-700">
+                  <input type="radio" checked={form.skipBehavior === 'exclude'}
+                    onChange={() => setForm({ ...form, skipBehavior: 'exclude' })}
+                    className="border-gray-300" />
+                  <span>Exclude from transformation</span>
+                </label>
+                <label className="flex items-center space-x-2 text-sm text-gray-700">
+                  <input type="radio" checked={form.skipBehavior === 'use_default'}
+                    onChange={() => setForm({ ...form, skipBehavior: 'use_default' })}
+                    className="border-gray-300" />
+                  <span>Use default value</span>
+                </label>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <input type="text" value={form.description ?? ''}
+            <textarea rows={2} value={form.description ?? ''}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className={inputCls} placeholder="What this field mapping does" />
           </div>
@@ -135,7 +374,7 @@ function AddFieldModal({
           </label>
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
-        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex-shrink-0">
           <button onClick={onClose} className="btn btn-secondary">Cancel</button>
           <button
             onClick={() => mutation.mutate()}
@@ -209,6 +448,13 @@ function FieldEditorPanel({ field, mappingId, onUpdated }: { field: FieldMapping
     defaultValue: field.defaultValue ?? '',
     description: field.description ?? '',
     dataType: field.dataType ?? 'string',
+    fieldDirection: (field as any).fieldDirection ?? 'both',
+    fieldIdentifier: (field as any).fieldIdentifier ?? '',
+    skipMapping: (field as any).skipMapping ?? false,
+    skipBehavior: (field as any).skipBehavior ?? 'exclude',
+    sampleInput: (field as any).sampleInput ?? '',
+    sampleOutput: (field as any).sampleOutput ?? '',
+    transformationConfig: (field as any).transformationConfig ?? {},
   });
   const [dirty, setDirty] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -219,6 +465,13 @@ function FieldEditorPanel({ field, mappingId, onUpdated }: { field: FieldMapping
       transformationType: field.transformationType, isRequired: field.isRequired,
       defaultValue: field.defaultValue ?? '', description: field.description ?? '',
       dataType: field.dataType ?? 'string',
+      fieldDirection: (field as any).fieldDirection ?? 'both',
+      fieldIdentifier: (field as any).fieldIdentifier ?? '',
+      skipMapping: (field as any).skipMapping ?? false,
+      skipBehavior: (field as any).skipBehavior ?? 'exclude',
+      sampleInput: (field as any).sampleInput ?? '',
+      sampleOutput: (field as any).sampleOutput ?? '',
+      transformationConfig: (field as any).transformationConfig ?? {},
     });
     setDirty(false);
   }, [field.id]);
@@ -230,7 +483,11 @@ function FieldEditorPanel({ field, mappingId, onUpdated }: { field: FieldMapping
       sourcePath: form.sourcePath, targetPath: form.targetPath,
       transformationType: form.transformationType, isRequired: form.isRequired,
       defaultValue: form.defaultValue, description: form.description, dataType: form.dataType,
-    }),
+      fieldDirection: form.fieldDirection, fieldIdentifier: form.fieldIdentifier,
+      skipMapping: form.skipMapping, skipBehavior: form.skipBehavior,
+      sampleInput: form.sampleInput, sampleOutput: form.sampleOutput,
+      transformationConfig: form.transformationConfig,
+    } as any),
     onSuccess: () => { setDirty(false); setToast('Saved'); onUpdated(); setTimeout(() => setToast(null), 2000); },
   });
 
@@ -253,9 +510,10 @@ function FieldEditorPanel({ field, mappingId, onUpdated }: { field: FieldMapping
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Transformation</label>
-            <select value={form.transformationType} onChange={(e) => patch({ transformationType: e.target.value as TransformationType })} className={selectCls}>
-              {TRANSFORMATION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            <select value={form.transformationType} onChange={(e) => patch({ transformationType: e.target.value as TransformationType, transformationConfig: {} })} className={selectCls}>
+              {TRANSFORMATION_TYPES.map((t) => <option key={t.value} value={t.value} title={t.description}>{t.label}</option>)}
             </select>
+            <p className="text-xs text-gray-400 mt-0.5">{TRANSFORMATION_TYPES.find(t => t.value === form.transformationType)?.description}</p>
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Data Type</label>
@@ -264,9 +522,63 @@ function FieldEditorPanel({ field, mappingId, onUpdated }: { field: FieldMapping
             </select>
           </div>
         </div>
+        {/* Type-specific transformation config */}
+        {form.transformationType && form.transformationType !== 'direct' && (
+          <div className="border border-blue-100 bg-blue-50 rounded-lg p-3 space-y-2">
+            <p className="text-xs font-medium text-blue-700">Transformation Config</p>
+            <TransformationConfigUI
+              type={form.transformationType}
+              config={form.transformationConfig ?? {}}
+              onChange={(cfg) => patch({ transformationConfig: cfg })}
+            />
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Field Direction</label>
+            <select value={form.fieldDirection} onChange={(e) => patch({ fieldDirection: e.target.value as any })} className={selectCls}>
+              <option value="both">Both</option>
+              <option value="input">Input Only</option>
+              <option value="output">Output Only</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Field Identifier</label>
+            <input type="text" value={form.fieldIdentifier} onChange={(e) => patch({ fieldIdentifier: e.target.value })} className={inputCls} placeholder="policy.number" />
+          </div>
+        </div>
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Default Value</label>
           <input type="text" value={form.defaultValue} onChange={(e) => patch({ defaultValue: e.target.value })} className={inputCls} placeholder="Optional" />
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Sample Input</label>
+            <input type="text" value={form.sampleInput} onChange={(e) => patch({ sampleInput: e.target.value })} className={inputCls} placeholder="e.g. GL" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Sample Output</label>
+            <input type="text" value={form.sampleOutput} onChange={(e) => patch({ sampleOutput: e.target.value })} className={inputCls} placeholder="e.g. GeneralLiability" />
+          </div>
+        </div>
+        <div className="border border-gray-200 rounded-lg p-2.5 space-y-1.5">
+          <label className="flex items-center space-x-2 text-xs font-medium text-gray-700">
+            <input type="checkbox" checked={form.skipMapping} onChange={(e) => patch({ skipMapping: e.target.checked })} className="rounded border-gray-300" />
+            <span>Skip Mapping</span>
+          </label>
+          {form.skipMapping && (
+            <div className="ml-5 space-y-1">
+              <label className="flex items-center space-x-2 text-xs text-gray-700">
+                <input type="radio" checked={form.skipBehavior === 'exclude'} onChange={() => patch({ skipBehavior: 'exclude' })} className="border-gray-300" />
+                <span>Exclude from transformation</span>
+              </label>
+              <label className="flex items-center space-x-2 text-xs text-gray-700">
+                <input type="radio" checked={form.skipBehavior === 'use_default'} onChange={() => patch({ skipBehavior: 'use_default' })} className="border-gray-300" />
+                <span>Use default value</span>
+              </label>
+            </div>
+          )}
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
@@ -294,10 +606,13 @@ export default function MappingEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { selectedProductLine } = useProductLine();
+  useProductLine(); // keep context active
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [showAddField, setShowAddField] = useState(false);
   const [showAISuggest, setShowAISuggest] = useState(false);
+  const [showTestPanel, setShowTestPanel] = useState(false);
+  const [testInput, setTestInput] = useState('');
+  const [testResult, setTestResult] = useState<any>(null);
   const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const initialized = useRef(false);
@@ -318,6 +633,15 @@ export default function MappingEditor() {
       setNameValue(mapping.name);
     }
   }, [mapping]);
+
+  const testMappingMutation = useMutation({
+    mutationFn: async (sourceJson: string) => {
+      const parsed = JSON.parse(sourceJson);
+      return apiClient.post(`/mappings/${id}/test`, { data: parsed });
+    },
+    onSuccess: (res: any) => setTestResult(res.data),
+    onError: (e: any) => showToast('error', e?.message ?? 'Test failed — check your JSON syntax'),
+  });
 
   const aiSuggestMutation = useMutation({
     mutationFn: () => apiClient.post(`/mappings/${id}/suggest-fields`, {}),
@@ -408,6 +732,13 @@ export default function MappingEditor() {
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mapping.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
             {mapping.status}
           </span>
+          <button
+            onClick={() => { setShowTestPanel(true); setTestResult(null); setTestInput(''); }}
+            className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50"
+          >
+            <Play className="h-3.5 w-3.5 mr-1" />
+            Test Mapping
+          </button>
         </div>
       </div>
 
@@ -478,6 +809,100 @@ export default function MappingEditor() {
           )}
         </div>
       </div>
+
+      {/* Test Mapping Modal */}
+      {showTestPanel && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+              <div className="flex items-center space-x-2">
+                <Play className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Test Mapping</h3>
+              </div>
+              <button onClick={() => { setShowTestPanel(false); setTestResult(null); }} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div className="p-6 flex-1 overflow-y-auto">
+              <div className="space-y-4">
+                {/* Input + Output side by side */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Source Data (JSON)</label>
+                    <textarea
+                      value={testInput}
+                      onChange={(e) => setTestInput(e.target.value)}
+                      className="w-full h-56 font-mono text-xs border border-gray-300 rounded-md p-3 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder={'{\n  "Quote": {\n    "Premium": 1250.00,\n    "State": "CA"\n  }\n}'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Transformed Output</label>
+                    <div className="w-full h-56 bg-gray-900 border border-gray-700 rounded-md p-3 font-mono text-xs overflow-auto">
+                      {testResult
+                        ? <pre className="text-green-300">{JSON.stringify(testResult.output, null, 2)}</pre>
+                        : <pre className="text-gray-500">Output will appear here...</pre>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Per-field audit trail */}
+                {testResult?.fieldResults && (
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-sm font-medium text-gray-700">Field-by-Field Results</label>
+                      <div className="flex items-center space-x-3 text-xs">
+                        <span className="text-green-600 font-medium">✓ {testResult.summary?.success} success</span>
+                        <span className="text-yellow-600 font-medium">⊘ {testResult.summary?.skipped} skipped</span>
+                        <span className="text-red-600 font-medium">✗ {testResult.summary?.errors} errors</span>
+                        <span className="text-gray-400">{testResult.summary?.durationMs}ms</span>
+                      </div>
+                    </div>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50 text-gray-500 uppercase tracking-wide">
+                          <tr>
+                            <th className="px-3 py-2 text-left">Source Path</th>
+                            <th className="px-3 py-2 text-left">Type</th>
+                            <th className="px-3 py-2 text-left">Source Value</th>
+                            <th className="px-3 py-2 text-left">→ Result</th>
+                            <th className="px-3 py-2 text-left">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {testResult.fieldResults.map((r: any, i: number) => (
+                            <tr key={i} className={r.status === 'error' ? 'bg-red-50' : r.status === 'skipped' ? 'bg-gray-50' : r.status === 'default' ? 'bg-yellow-50' : ''}>
+                              <td className="px-3 py-2 font-mono text-blue-700 truncate max-w-[140px]" title={r.sourcePath}>{r.sourcePath}</td>
+                              <td className="px-3 py-2 text-gray-500">{r.transformationType}</td>
+                              <td className="px-3 py-2 font-mono text-gray-600 truncate max-w-[100px]" title={String(r.sourceValue ?? '')}>{r.sourceValue != null ? String(r.sourceValue) : <span className="text-gray-300">—</span>}</td>
+                              <td className="px-3 py-2 font-mono text-green-700 truncate max-w-[100px]" title={String(r.transformedValue ?? '')}>{r.transformedValue != null ? String(r.transformedValue) : <span className="text-gray-300">—</span>}</td>
+                              <td className="px-3 py-2">
+                                {r.status === 'success' && <span className="text-green-600">✓</span>}
+                                {r.status === 'skipped' && <span className="text-gray-400" title={r.note}>⊘</span>}
+                                {r.status === 'default' && <span className="text-yellow-600" title={r.note}>◌</span>}
+                                {r.status === 'error' && <span className="text-red-600" title={r.error}>✗ {r.error}</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end space-x-3">
+              <button onClick={() => { setTestInput(''); setTestResult(null); }} className="btn btn-secondary text-sm">Clear</button>
+              <button
+                onClick={() => testMappingMutation.mutate(testInput)}
+                disabled={!testInput.trim() || testMappingMutation.isPending}
+                className="btn btn-primary text-sm disabled:opacity-50 flex items-center space-x-2"
+              >
+                <Play className="h-3.5 w-3.5" />
+                <span>{testMappingMutation.isPending ? 'Running...' : 'Run Test'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Suggestions Modal */}
       {showAISuggest && (

@@ -54,6 +54,12 @@ export class ConditionalRule {
   @Column({ name: 'updated_by', length: 100, nullable: true })
   updatedBy?: string;
 
+  @Column({ name: 'pipeline_id', type: 'uuid', nullable: true })
+  pipelineId?: string;
+
+  @Column({ name: 'exec_order', type: 'int', default: 0 })
+  execOrder: number;
+
   @OneToMany(() => RuleCondition, (condition) => condition.rule, {
     cascade: true,
     eager: true,

@@ -84,6 +84,15 @@ export class Mapping {
   @Column({ name: 'session_id', length: 100, nullable: true })
   sessionId?: string;
 
+  @Column({ name: 'pipeline_id', type: 'uuid', nullable: true })
+  pipelineId?: string;
+
+  @Column({ name: 'exec_order', type: 'int', default: 0 })
+  execOrder: number;
+
+  @Column({ name: 'direction', length: 10, default: 'request' })
+  direction: 'request' | 'response';
+
   @Column({ name: 'mapping_number', length: 50, unique: true, nullable: true })
   mappingNumber?: string;
 

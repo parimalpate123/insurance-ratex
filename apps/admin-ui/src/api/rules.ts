@@ -68,6 +68,8 @@ export interface ConditionalRule {
   priority: number;
   createdBy?: string;
   updatedBy?: string;
+  pipelineId?: string;
+  execOrder?: number;
   createdAt: string;
   updatedAt: string;
   conditions: RuleCondition[];

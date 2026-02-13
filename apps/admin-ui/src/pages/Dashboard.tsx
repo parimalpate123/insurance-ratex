@@ -1,8 +1,16 @@
 import { useProductLine } from '@/contexts/ProductLineContext';
 import { useQuery } from '@tanstack/react-query';
 import { productLinesApi } from '@/api/product-lines';
-import { Activity, Clock, Zap, Package, ArrowRight } from 'lucide-react';
+import { Activity, Clock, Zap, Package, ArrowRight, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const STEP_ROUTES: Record<string, string> = {
+  validate:  '/product-lines',
+  transform: '/mappings',
+  rules:     '/rules',
+  calculate: '/decision-tables',
+  respond:   '/mappings',
+};
 
 export default function Dashboard() {
   const { currentProductLine, productLines } = useProductLine();
@@ -100,37 +108,38 @@ export default function Dashboard() {
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Workflow Configuration</h2>
           <div className="space-y-3">
-            {workflowSteps.map((step: any, index: number) => (
-              <div
-                key={step.id}
-                className={`flex items-center justify-between p-4 rounded-lg border ${
-                  step.enabled
-                    ? 'bg-green-50 border-green-200'
-                    : 'bg-gray-50 border-gray-200'
-                }`}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-medium text-gray-700 border border-gray-300">
-                    {index + 1}
+            {workflowSteps.map((step: any, index: number) => {
+              const route = STEP_ROUTES[step.id] ?? STEP_ROUTES[step.type];
+              const inner = (
+                <>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0 w-8 h-8 bg-white rounded-full flex items-center justify-center text-sm font-medium text-gray-700 border border-gray-300">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-1.5">
+                        <h3 className="text-sm font-medium text-gray-900">{step.name}</h3>
+                        {route && <ExternalLink className="h-3 w-3 text-gray-400" />}
+                      </div>
+                      <p className="text-xs text-gray-500">{step.type} • {step.id}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-gray-900">{step.name}</h3>
-                    <p className="text-xs text-gray-500">
-                      {step.type} • {step.id}
-                    </p>
-                  </div>
-                </div>
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    step.enabled
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}
-                >
-                  {step.enabled ? 'Enabled' : 'Disabled'}
-                </span>
-              </div>
-            ))}
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${step.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                    {step.enabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </>
+              );
+
+              const cls = `flex items-center justify-between p-4 rounded-lg border transition-all ${
+                step.enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+              } ${route ? 'hover:shadow-sm hover:border-primary-300 cursor-pointer' : ''}`;
+
+              return route ? (
+                <Link key={step.id} to={route} className={cls}>{inner}</Link>
+              ) : (
+                <div key={step.id} className={cls}>{inner}</div>
+              );
+            })}
           </div>
         </div>
       )}
