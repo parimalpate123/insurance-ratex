@@ -3,7 +3,11 @@ import { apiClient } from './client';
 export interface PipelineStep {
   id?: string;
   stepOrder: number;
-  stepType: 'transform' | 'execute_rules' | 'call_system' | 'mock_response';
+  stepType:
+    | 'validate' | 'map_request' | 'apply_rules' | 'call_system'
+    | 'map_response' | 'apply_response_rules' | 'enrich' | 'mock_response'
+    // legacy aliases
+    | 'transform' | 'execute_rules' | 'transform_response';
   name?: string;
   config: Record<string, any>;
   isActive?: boolean;

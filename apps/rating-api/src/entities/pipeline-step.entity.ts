@@ -20,7 +20,20 @@ export class PipelineStep {
   stepOrder: number;
 
   @Column({ name: 'step_type', length: 30 })
-  stepType: 'transform' | 'execute_rules' | 'call_system' | 'transform_response' | 'mock_response';
+  stepType:
+    // Current clean names
+    | 'validate'
+    | 'map_request'
+    | 'apply_rules'
+    | 'call_system'
+    | 'map_response'
+    | 'apply_response_rules'
+    | 'enrich'
+    | 'mock_response'
+    // Legacy aliases (backward compat)
+    | 'transform'
+    | 'execute_rules'
+    | 'transform_response';
 
   @Column({ length: 255, nullable: true })
   name: string;

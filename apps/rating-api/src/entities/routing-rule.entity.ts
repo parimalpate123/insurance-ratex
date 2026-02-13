@@ -16,7 +16,7 @@ export class RoutingRule {
   @JoinColumn({ name: 'pipeline_id' })
   pipeline: Pipeline;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ name: 'product_line', length: 100, nullable: true })
   productLine: string;
 
   @Column({ name: 'source_system', length: 100, nullable: true })

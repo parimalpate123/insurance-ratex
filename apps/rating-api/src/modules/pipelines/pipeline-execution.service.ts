@@ -78,11 +78,18 @@ export class PipelineExecutionService {
 
       try {
         switch (step.stepType) {
-          case 'transform':
+          // ── New clean step types ──────────────────────────────────────
+          case 'validate':
+            context = this.runValidate(step.config, context, stepResult);
+            break;
+
+          case 'map_request':
+          case 'transform': // legacy alias
             context = await this.runTransform(step.config, context, stepResult, pipelineId);
             break;
 
-          case 'execute_rules':
+          case 'apply_rules':
+          case 'execute_rules': // legacy alias
             context = await this.runRules(step.config, context, stepResult, pipelineId);
             break;
 
@@ -90,8 +97,17 @@ export class PipelineExecutionService {
             context = await this.callSystem(step.config, context, stepResult);
             break;
 
-          case 'transform_response':
+          case 'map_response':
+          case 'transform_response': // legacy alias
             context = await this.runTransformResponse(step.config, context, stepResult, pipelineId);
+            break;
+
+          case 'apply_response_rules':
+            context = await this.runResponseRules(step.config, context, stepResult, pipelineId);
+            break;
+
+          case 'enrich':
+            context = await this.runEnrich(step.config, context, stepResult);
             break;
 
           case 'mock_response':
@@ -363,6 +379,98 @@ export class PipelineExecutionService {
     const { response } = config;
     stepResult.detail = { note: 'Static mock response injected' };
     return { ...context, response: response ?? { mocked: true } };
+  }
+
+  // ── validate ─────────────────────────────────────────────────────────────────
+  // References a schema file stored in the Knowledge Base (config.schemaFile).
+  // Schema-based validation will be wired once the KB file-fetch is integrated.
+  // For now: passes through and records which schema file is configured.
+  private runValidate(config: any, context: any, stepResult: StepResult): any {
+    const { schemaFile } = config;
+    if (schemaFile) {
+      this.logger.log(`Validate step: schema file '${schemaFile}' referenced — schema validation not yet enforced`);
+      stepResult.detail = { schemaFile, status: 'pass-through — schema enforcement pending' };
+    } else {
+      stepResult.detail = { status: 'pass-through — no schema file configured' };
+    }
+    return context;
+  }
+
+  // ── apply_response_rules ──────────────────────────────────────────────────────
+  // Same logic as apply_rules but operates on context.response instead of the
+  // full context. Use this for post-rating adjustments (caps, surcharges, etc.)
+  private async runResponseRules(
+    config: any,
+    context: any,
+    stepResult: StepResult,
+    pipelineId: string,
+  ): Promise<any> {
+    const activeRules = await this.ruleRepo.find({
+      where: { pipelineId, status: 'active' },
+      relations: ['conditions', 'actions'],
+      order: { execOrder: 'ASC', priority: 'DESC' } as any,
+    });
+
+    if (!activeRules.length) {
+      stepResult.detail = { note: 'No active rules linked to this pipeline — skipped' };
+      return context;
+    }
+
+    // Apply rules against the response object
+    let response = { ...(context.response ?? {}) };
+    const ruleResults: any[] = [];
+    const appliedActions: any[] = [];
+
+    for (const rule of activeRules) {
+      const conditionsMet = this.evaluateConditions(rule.conditions || [], response);
+      if (conditionsMet) {
+        for (const action of rule.actions || []) {
+          if (action.actionType === 'set_value' && action.targetField) {
+            response = this.setByPath(response, action.targetField, action.value);
+          }
+          appliedActions.push({ ruleId: rule.id, ruleName: rule.name, action: action.actionType, target: action.targetField });
+        }
+      }
+      ruleResults.push({ ruleId: rule.id, name: rule.name, matched: conditionsMet });
+    }
+
+    stepResult.detail = { rulesEvaluated: ruleResults.length, actionsApplied: appliedActions };
+    return { ...context, response };
+  }
+
+  // ── enrich ────────────────────────────────────────────────────────────────────
+  // Enriches context fields by performing lookup table lookups.
+  // config.lookups is an array of { sourceField, tableKey, targetField }
+  // e.g. read context.classification.code, look up in 'state-class-mapping', write to context.classification.label
+  private async runEnrich(config: any, context: any, stepResult: StepResult): Promise<any> {
+    const lookups: Array<{ sourceField: string; tableKey: string; targetField: string }> =
+      config.lookups ?? [];
+
+    if (!lookups.length) {
+      stepResult.detail = { note: 'No lookups configured — skipped' };
+      return context;
+    }
+
+    const results: any[] = [];
+    let enriched = { ...context };
+
+    for (const lookup of lookups) {
+      const sourceVal = this.getByPath(context, lookup.sourceField);
+      if (sourceVal === undefined || sourceVal === null) {
+        results.push({ sourceField: lookup.sourceField, status: 'skipped', reason: 'source value is null/undefined' });
+        continue;
+      }
+      try {
+        const found = await this.lookupTablesService.lookup(lookup.tableKey, String(sourceVal));
+        enriched = this.setByPath(enriched, lookup.targetField, found);
+        results.push({ sourceField: lookup.sourceField, tableKey: lookup.tableKey, targetField: lookup.targetField, value: found, status: 'hit' });
+      } catch {
+        results.push({ sourceField: lookup.sourceField, tableKey: lookup.tableKey, status: 'miss' });
+      }
+    }
+
+    stepResult.detail = { lookupsRun: results };
+    return enriched;
   }
 
   // ── Routing ───────────────────────────────────────────────────────────────

@@ -8,11 +8,14 @@ import { productLinesApi } from '../api/product-lines';
 
 // ── Step type options ─────────────────────────────────────────────────────────
 const STEP_TYPES = [
-  { value: 'transform',          label: 'Transform Request',   desc: 'Map input fields → target system format' },
-  { value: 'execute_rules',      label: 'Execute Rules',        desc: 'Evaluate business rules against request data' },
-  { value: 'call_system',        label: 'Call System',          desc: 'HTTP call to target system (Earnix / Ratabase)' },
-  { value: 'transform_response', label: 'Transform Response',   desc: 'Map target system response → standard output format' },
-  { value: 'mock_response',      label: 'Mock Response',        desc: 'Inject a static response for testing (bypasses call_system)' },
+  { value: 'validate',              label: 'Validate',               desc: 'Check required fields & data types before processing' },
+  { value: 'map_request',           label: 'Map Request',             desc: 'Transform source fields → target system format (request direction mappings)' },
+  { value: 'apply_rules',           label: 'Apply Rules',             desc: 'Evaluate pre-rating business rules (eligibility, factor loading)' },
+  { value: 'call_system',           label: 'Call Rating Engine',      desc: 'Send transformed request to external system (Earnix / Ratabase)' },
+  { value: 'map_response',          label: 'Map Response',            desc: 'Transform target system response → standard output format (response direction mappings)' },
+  { value: 'apply_response_rules',  label: 'Apply Response Rules',    desc: 'Post-rating adjustments on the response (caps, surcharges, overrides)' },
+  { value: 'enrich',                label: 'Enrich',                  desc: 'Lookup table enrichment — resolve codes to values' },
+  { value: 'mock_response',         label: 'Mock Response',           desc: 'Inject a static response for dev/testing (skips Call Rating Engine)' },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -21,8 +24,18 @@ const STATUS_COLORS: Record<string, string> = {
   archived: 'bg-gray-100 text-gray-500',
 };
 
-const emptyStep = (): PipelineStep => ({ stepOrder: 1, stepType: 'transform', name: '', config: {} });
+const emptyStep = (): PipelineStep => ({ stepOrder: 1, stepType: 'validate', name: '', config: {} });
 const emptyRule = (): RoutingRule => ({ productLine: '', sourceSystem: '', transactionType: '', priority: 0 });
+
+// Default steps for a new pipeline — covers the standard insurance integration flow
+const defaultSteps = (): PipelineStep[] => [
+  { stepOrder: 1, stepType: 'validate',             name: 'Validate Request',       config: {} },
+  { stepOrder: 2, stepType: 'map_request',           name: 'Map Request',             config: {} },
+  { stepOrder: 3, stepType: 'apply_rules',           name: 'Apply Pre-Rating Rules',  config: {} },
+  { stepOrder: 4, stepType: 'call_system',           name: 'Call Rating Engine',      config: {} },
+  { stepOrder: 5, stepType: 'map_response',          name: 'Map Response',            config: {} },
+  { stepOrder: 6, stepType: 'apply_response_rules',  name: 'Apply Response Rules',    config: {} },
+];
 
 const emptyPipeline = (): Partial<Pipeline> => ({
   name: '',
@@ -31,7 +44,7 @@ const emptyPipeline = (): Partial<Pipeline> => ({
   sourceSystemCode: '',
   targetSystemCode: '',
   status: 'draft',
-  steps: [emptyStep()],
+  steps: defaultSteps(),
   routingRules: [emptyRule()],
 });
 
@@ -49,10 +62,37 @@ function StepConfigEditor({
 }) {
   const inputCls = 'w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500';
 
-  if (step.stepType === 'transform') {
+  if (step.stepType === 'validate') {
+    return (
+      <div className="space-y-2">
+        <div>
+          <label className="text-xs text-gray-500">Schema File <span className="text-gray-400">(from Knowledge Base)</span></label>
+          <input
+            className={inputCls}
+            value={step.config.schemaFile ?? ''}
+            onChange={e => onChange({ ...step.config, schemaFile: e.target.value })}
+            placeholder="e.g. gw-rating-request-schema.json"
+          />
+        </div>
+        <p className="text-xs text-gray-400">
+          Upload the schema file via the Knowledge Base page. Leave empty to pass through without validation.
+        </p>
+      </div>
+    );
+  }
+
+  if (step.stepType === 'map_request' || step.stepType === 'transform') {
     return (
       <p className="text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded">
-        Auto-discovers all <strong>active</strong> mappings linked to this pipeline. Link mappings via the Mappings page using the <strong>pipeline link</strong> button.
+        Auto-discovers all <strong>active request-direction</strong> mappings linked to this pipeline. Link mappings via the Mappings page → pipeline link button → set direction to <strong>Request</strong>.
+      </p>
+    );
+  }
+
+  if (step.stepType === 'apply_rules' || step.stepType === 'execute_rules') {
+    return (
+      <p className="text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded">
+        Auto-discovers all <strong>active</strong> rules linked to this pipeline. Link rules via the Rules page using the <strong>pipeline link</strong> button.
       </p>
     );
   }
@@ -100,19 +140,36 @@ function StepConfigEditor({
     );
   }
 
-  if (step.stepType === 'execute_rules') {
+  if (step.stepType === 'map_response' || step.stepType === 'transform_response') {
     return (
-      <p className="text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded">
-        Auto-discovers all <strong>active</strong> rules linked to this pipeline. Link rules via the Rules page using the <strong>pipeline link</strong> button.
+      <p className="text-xs text-green-700 bg-green-50 px-3 py-2 rounded">
+        Auto-discovers all <strong>active response-direction</strong> mappings linked to this pipeline. Maps the rating engine response back to the standard output format. Link mappings via the Mappings page → pipeline link button → set direction to <strong>Response</strong>.
       </p>
     );
   }
 
-  if (step.stepType === 'transform_response') {
+  if (step.stepType === 'apply_response_rules') {
     return (
-      <p className="text-xs text-green-700 bg-green-50 px-3 py-2 rounded">
-        Maps the <strong>target system response</strong> (e.g. Earnix premium JSON / Ratabase XML) back to the standard output format. Auto-discovers <strong>active response mappings</strong> linked to this pipeline — create a separate mapping marked as <em>response direction</em> and link it to this pipeline.
+      <p className="text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded">
+        Applies rules against the <strong>response</strong> object (premium caps, surcharges, minimum premium overrides). Uses the same rules linked to this pipeline — rule conditions are evaluated against <code>context.response</code>.
       </p>
+    );
+  }
+
+  if (step.stepType === 'enrich') {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs text-gray-500">Lookup table enrichment — add one row per lookup:</p>
+        {(step.config.lookups ?? [{ sourceField: '', tableKey: '', targetField: '' }]).map((lk: any, i: number) => (
+          <div key={i} className="grid grid-cols-3 gap-1">
+            <input className={inputCls} value={lk.sourceField} onChange={e => { const ls = [...(step.config.lookups ?? [])]; ls[i] = { ...ls[i], sourceField: e.target.value }; onChange({ ...step.config, lookups: ls }); }} placeholder="classification.code" />
+            <input className={inputCls} value={lk.tableKey}    onChange={e => { const ls = [...(step.config.lookups ?? [])]; ls[i] = { ...ls[i], tableKey: e.target.value };    onChange({ ...step.config, lookups: ls }); }} placeholder="state-class-mapping" />
+            <input className={inputCls} value={lk.targetField} onChange={e => { const ls = [...(step.config.lookups ?? [])]; ls[i] = { ...ls[i], targetField: e.target.value }; onChange({ ...step.config, lookups: ls }); }} placeholder="classification.label" />
+          </div>
+        ))}
+        <button className="text-xs text-primary-600 hover:underline" onClick={() => onChange({ ...step.config, lookups: [...(step.config.lookups ?? []), { sourceField: '', tableKey: '', targetField: '' }] })}>+ Add lookup</button>
+        <p className="text-xs text-gray-400">Columns: source field path · lookup table key · target field path</p>
+      </div>
     );
   }
 
@@ -191,7 +248,7 @@ export default function Pipelines() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pipelines</h1>
-          <p className="text-gray-500 text-sm mt-1">Define end-to-end data flows: transform → call system → respond</p>
+          <p className="text-gray-500 text-sm mt-1">Define end-to-end flows: validate → map request → apply rules → call engine → map response → apply response rules</p>
         </div>
         <button
           onClick={() => { setEditing(emptyPipeline()); setIsNew(true); }}
@@ -227,32 +284,29 @@ export default function Pipelines() {
       {/* ── Editor Modal ── */}
       {editing && (
         <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl my-8">
-            <div className="p-6">
-              <h2 className="text-lg font-bold mb-5">{isNew ? 'New Pipeline' : 'Edit Pipeline'}</h2>
-              <div className="space-y-4">
-                {/* Product Line — first, drives the pipeline context */}
-                <div>
-                  <label className={labelCls}>Product Line *</label>
-                  <select
-                    className={inputCls}
-                    value={editing.productLineCode ?? ''}
-                    onChange={e => {
-                      const pl = productLines.find(p => p.code === e.target.value);
-                      // auto-sync first routing rule's productLine
-                      const rr = [...(editing.routingRules ?? [emptyRule()])];
-                      if (rr.length > 0) rr[0] = { ...rr[0], productLine: e.target.value };
-                      setEditing({ ...editing, productLineCode: e.target.value, routingRules: rr });
-                    }}
-                  >
-                    <option value="">-- select product line --</option>
-                    {productLines.map(pl => (
-                      <option key={pl.code} value={pl.code}>{pl.name} ({pl.code})</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl my-8">
+            <div className="p-8">
+              <h2 className="text-xl font-bold mb-6">{isNew ? 'New Pipeline' : 'Edit Pipeline'}</h2>
+              <div className="space-y-5">
+                {/* Top row: Product Line · Pipeline Name · Status */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className={labelCls}>Product Line *</label>
+                    <select
+                      className={inputCls}
+                      value={editing.productLineCode ?? ''}
+                      onChange={e => {
+                        const rr = [...(editing.routingRules ?? [emptyRule()])];
+                        if (rr.length > 0) rr[0] = { ...rr[0], productLine: e.target.value };
+                        setEditing({ ...editing, productLineCode: e.target.value, routingRules: rr });
+                      }}
+                    >
+                      <option value="">-- select product line --</option>
+                      {productLines.map(pl => (
+                        <option key={pl.code} value={pl.code}>{pl.name} ({pl.code})</option>
+                      ))}
+                    </select>
+                  </div>
                   <div>
                     <label className={labelCls}>Pipeline Name *</label>
                     <input className={inputCls} value={editing.name ?? ''} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="GW → Earnix GL" />
@@ -269,7 +323,7 @@ export default function Pipelines() {
 
                 <div>
                   <label className={labelCls}>Description</label>
-                  <textarea className={inputCls} rows={2} value={editing.description ?? ''} onChange={e => setEditing({ ...editing, description: e.target.value })} />
+                  <textarea className={inputCls} rows={2} value={editing.description ?? ''} onChange={e => setEditing({ ...editing, description: e.target.value })} placeholder="Describe what this pipeline does, e.g. GW → Earnix for GL new business" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -298,35 +352,48 @@ export default function Pipelines() {
                     </button>
                   </div>
                   <div className="space-y-3">
-                    {(editing.steps ?? []).map((step, idx) => (
-                      <div key={idx} className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-xs bg-primary-100 text-primary-700 font-bold px-2 py-0.5 rounded-full">#{step.stepOrder}</span>
-                          <select
-                            className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500"
-                            value={step.stepType}
-                            onChange={e => updateStep(idx, { stepType: e.target.value as any, config: {} })}
-                          >
-                            {STEP_TYPES.map(t => <option key={t.value} value={t.value}>{t.label} — {t.desc}</option>)}
-                          </select>
-                          <input
-                            className="w-32 border border-gray-300 rounded px-2 py-1 text-sm"
-                            value={step.name ?? ''}
-                            onChange={e => updateStep(idx, { name: e.target.value })}
-                            placeholder="Step name"
-                          />
-                          <button onClick={() => removeStep(idx)} className="p-1 hover:bg-red-50 rounded">
-                            <Trash2 className="h-4 w-4 text-red-400" />
-                          </button>
+                    {(editing.steps ?? []).map((step, idx) => {
+                      const stepMeta = STEP_TYPES.find(t => t.value === step.stepType);
+                      return (
+                        <div key={idx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                          {/* Row 1: order badge + type selector + name input + delete */}
+                          <div className="flex items-center gap-3 mb-2">
+                            <span className="shrink-0 text-xs bg-primary-100 text-primary-700 font-bold w-8 h-8 flex items-center justify-center rounded-full">
+                              {step.stepOrder}
+                            </span>
+                            <select
+                              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                              value={step.stepType}
+                              onChange={e => updateStep(idx, { stepType: e.target.value as any, config: {} })}
+                            >
+                              {STEP_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                            </select>
+                            <input
+                              className="w-52 border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              value={step.name ?? ''}
+                              onChange={e => updateStep(idx, { name: e.target.value })}
+                              placeholder="Step label (optional)"
+                            />
+                            <button onClick={() => removeStep(idx)} className="shrink-0 p-2 hover:bg-red-50 rounded-lg" title="Remove step">
+                              <Trash2 className="h-4 w-4 text-red-400" />
+                            </button>
+                          </div>
+                          {/* Description hint */}
+                          {stepMeta && (
+                            <p className="text-xs text-gray-400 ml-11 mb-2">{stepMeta.desc}</p>
+                          )}
+                          {/* Config editor */}
+                          <div className="ml-11">
+                            <StepConfigEditor
+                              step={step}
+                              mappings={mappings}
+                              systems={systems}
+                              onChange={(config) => updateStep(idx, { config })}
+                            />
+                          </div>
                         </div>
-                        <StepConfigEditor
-                          step={step}
-                          mappings={mappings}
-                          systems={systems}
-                          onChange={(config) => updateStep(idx, { config })}
-                        />
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -337,7 +404,7 @@ export default function Pipelines() {
                     <span className="text-xs text-gray-400">Defines when inbound requests are directed to this pipeline</span>
                   </div>
                   {(editing.routingRules ?? []).map((rule, idx) => (
-                    <div key={idx} className="grid grid-cols-4 gap-2 mb-2 items-center">
+                    <div key={idx} className="grid grid-cols-4 gap-3 mb-2 items-end">
                       <div>
                         <label className="text-xs text-gray-400 mb-0.5 block">Product Line</label>
                         <input
